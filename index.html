@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="hu">
 <head>
@@ -109,13 +108,11 @@ th, td {
   white-space: nowrap;
 }
 
-/* Név és egyesület balra igazítása */
 td.left,
 th.left {
   text-align: left;
 }
 
-/* Kategóriafejléc */
 .category-row td {
   background: #dce7f3;
   color: #17365d;
@@ -155,7 +152,6 @@ footer {
 </header>
 
 <main>
-
 <nav class="tabs" id="tabs" aria-label="Eredménylapok"></nav>
 
 <section class="panel">
@@ -164,7 +160,6 @@ footer {
   </div>
   <div id="status">Kapcsolódás…</div>
 </section>
-
 </main>
 
 <footer>
@@ -224,9 +219,7 @@ function emptyRow(row) {
   );
 }
 
-// Név, egyesület és kategória balra igazítása
 function isLeftAlignedColumn(index) {
-
   if (
     active === "startlista1" ||
     active === "startlista2"
@@ -247,28 +240,25 @@ function isLeftAlignedColumn(index) {
 
 // Cellák létrehozása
 function createCells(row, selectedColumns) {
-
   let html = "";
 
   selectedColumns.forEach(index => {
-
     let value = row[index] ?? "";
 
     /*
       EREDMÉNY 1. FORDULÓ:
-      A forrás Nr. oszlopában lévő helyezés
-      a megjelenített Hely oszlopba kerül.
-      A Nr. oszlopba a rajtszám kerül.
+      Nr. = startszám
+      Kocsi száma = kocsiszám
+      Helyezés = helyezés
+
+      A három adatot külön, a megfelelő
+      oszlopban jelenítjük meg.
     */
+
     if (active === "eredmeny1") {
-
-      if (index === 1) {
-        value = row[2] ?? "";
-      }
-
-      if (index === 2) {
-        value = row[1] ?? "";
-      }
+      if (index === 1) value = row[1] ?? "";
+      if (index === 2) value = row[2] ?? "";
+      if (index === 3) value = row[3] ?? "";
     }
 
     const className =
@@ -330,13 +320,9 @@ function render() {
   let html = '<div class="table-wrap"><table><thead><tr>';
 
   selectedColumns.forEach(index => {
-
     if (headers[index] !== undefined) {
-
       let headerValue = headers[index];
 
-      // Az eredménylap Hely és Nr. fejlécei maradnak
-      // a megfelelő oszlopok fölött.
       const className =
         isLeftAlignedColumn(index) ? ' class="left"' : "";
 
@@ -354,9 +340,7 @@ function render() {
     active === "startlista1" ||
     active === "startlista2"
   ) {
-
     rows.slice(headerIndex + 1).forEach(row => {
-
       if (!Array.isArray(row) || emptyRow(row)) return;
 
       if (row.some(value =>
@@ -376,9 +360,7 @@ function render() {
 
   // KÉT FORDULÓ ÖSSZETETT EREDMÉNY
   else if (active === "osszetett") {
-
     function getDetail(row, label) {
-
       if (!Array.isArray(row)) return "";
 
       const value7 = String(row[7] ?? "").trim();
@@ -391,14 +373,12 @@ function render() {
     }
 
     rows.forEach((row, rowIndex) => {
-
       if (!Array.isArray(row) || emptyRow(row)) return;
 
       if (row.some(value =>
         String(value ?? "").trim().startsWith("#")
       )) return;
 
-      // KATEGÓRIAFEJLÉC
       const categoryName = String(row[1] ?? "").trim();
       const categoryText = String(row[2] ?? "").trim();
 
@@ -410,7 +390,6 @@ function render() {
         pathLength !== "";
 
       if (isCategory) {
-
         const speed = getDetail(rows[rowIndex - 1], "Iram:");
         const baseTime = getDetail(rows[rowIndex + 1], "Alapidő:");
 
@@ -428,13 +407,11 @@ function render() {
         return;
       }
 
-      // Ismétlődő táblázatfejlécek kihagyása
       if (
         String(row[1] ?? "").trim() === "Hely" &&
         String(row[2] ?? "").trim() === "Nr."
       ) return;
 
-      // Csak valódi versenyzői sor
       const nr = String(row[2] ?? "").trim();
       const name = String(row[5] ?? "").trim();
 
@@ -448,9 +425,7 @@ function render() {
 
   // EREDMÉNY 1. FORDULÓ
   else if (active === "eredmeny1") {
-
     rows.forEach((row, rowIndex) => {
-
       if (!Array.isArray(row) || emptyRow(row)) return;
 
       if (row.some(value =>
@@ -462,7 +437,6 @@ function render() {
       const cell5 = String(row[5] ?? "").trim();
       const cell6 = String(row[6] ?? "").trim();
 
-      // KATEGÓRIAFEJLÉC
       const isCategory =
         cell1 !== "" &&
         cell4.includes("Iram:") &&
@@ -470,7 +444,6 @@ function render() {
         cell6.includes("Alapidő:");
 
       if (isCategory) {
-
         const details = [
           cell4,
           cell5,
@@ -485,7 +458,6 @@ function render() {
         return;
       }
 
-      // Táblázatfejléc és "Versenyző adatai" sor kihagyása
       if (rowIndex === headerIndex) return;
 
       if (
@@ -493,8 +465,6 @@ function render() {
         String(row[4] ?? "").trim() === "Versenyző adatai"
       ) return;
 
-      // A forrás Nr. oszlopában szereplő helyezés
-      // numerikus, ezért ezen alapul a versenyzői sor felismerése.
       const nr = String(row[1] ?? "").trim();
       const name = String(row[4] ?? "").trim();
 
@@ -507,7 +477,6 @@ function render() {
   }
 
   html += "</tbody></table></div>";
-
   root.innerHTML = html;
 }
 
