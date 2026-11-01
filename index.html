@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="hu">
 <head>
@@ -271,24 +272,36 @@ function render() {
 
   html += "</tr></thead><tbody>";
 
-  rows.slice(headerIndex + 1).forEach(row => {
+  // A többi fül eredeti, változatlan sorfeldolgozása.
+  if (active !== "eredmeny1") {
 
-    if (emptyRow(row)) return;
+    rows.slice(headerIndex + 1).forEach(row => {
 
-    // Excel-hibás sorok kihagyása
-    if (row.some(value =>
-      String(value ?? "").trim().startsWith("#")
-    )) return;
+      if (emptyRow(row)) return;
 
-    // STARTLISTÁK – korábban jól működő megjelenítés
-    if (
-      active === "startlista1" ||
-      active === "startlista2"
-    ) {
-      const nr = String(row[1] ?? "").trim();
-      const name = String(row[4] ?? "").trim();
+      if (row.some(value =>
+        String(value ?? "").trim().startsWith("#")
+      )) return;
 
-      if (nr === "" || name === "") return;
+      // STARTLISTÁK
+      if (
+        active === "startlista1" ||
+        active === "startlista2"
+      ) {
+        const nr = String(row[1] ?? "").trim();
+        const name = String(row[4] ?? "").trim();
+
+        if (nr === "" || name === "") return;
+      }
+
+      // KÉT FORDULÓ ÖSSZETETT EREDMÉNY
+      else if (active === "osszetett") {
+
+        const nr = String(row[2] ?? "").trim();
+        const name = String(row[5] ?? "").trim();
+
+        if (nr === "" || name === "") return;
+      }
 
       html += "<tr>";
 
@@ -297,32 +310,64 @@ function render() {
       });
 
       html += "</tr>";
-      return;
-    }
+    });
+
+  } else {
 
     // EREDMÉNY 1. FORDULÓ
-    if (active === "eredmeny1") {
+    // A kategóriafejléceket a teljes tömbben keressük,
+    // így azok a táblázat fejlécét megelőző sorokból sem vesznek el.
 
-      const nr = String(row[1] ?? "").trim();
-      const name = String(row[4] ?? "").trim();
+    rows.forEach((row, rowIndex) => {
 
-      // Kategóriasor: csak a kategória neve van kitöltve
-      const categoryCell = String(row[9] ?? "").trim();
+      if (!Array.isArray(row) || emptyRow(row)) return;
 
-      if (
-        categoryCell !== "" &&
-        nr === "" &&
-        name === ""
-      ) {
+      if (row.some(value =>
+        String(value ?? "").trim().startsWith("#")
+      )) return;
+
+      const cell1 = String(row[1] ?? "").trim();
+      const cell4 = String(row[4] ?? "").trim();
+      const cell5 = String(row[5] ?? "").trim();
+      const cell6 = String(row[6] ?? "").trim();
+
+      // KATEGÓRIAFEJLÉC
+      const isCategory =
+        cell1 !== "" &&
+        cell4.includes("Iram:") &&
+        cell5.includes("Pályahossz:") &&
+        cell6.includes("Alapidő:");
+
+      if (isCategory) {
+
+        const details = [
+          cell4,
+          cell5,
+          cell6
+        ].filter(Boolean);
+
         html += '<tr class="category-row">';
         html += '<td colspan="' + selectedColumns.length + '">';
-        html += esc(categoryCell);
+        html += esc(cell1 + "  |  " + details.join("  |  "));
         html += "</td></tr>";
+
         return;
       }
 
-      // Technikai és üres sorok kizárása
-      if (nr === "" || name === "") return;
+      // A táblázat oszlopfejléce és a "Versenyző adatai" sor kihagyása
+      if (rowIndex === headerIndex) return;
+
+      if (
+        String(row[3] ?? "").trim() === "Versenyző adatai" ||
+        String(row[4] ?? "").trim() === "Versenyző adatai"
+      ) return;
+
+      // CSAK valódi versenyzői sor:
+      // számszerű rajtszám és versenyzőnév szükséges
+      const nr = String(row[1] ?? "").trim();
+      const name = String(row[4] ?? "").trim();
+
+      if (!/^\d+$/.test(nr) || name === "") return;
 
       html += "<tr>";
 
@@ -331,27 +376,8 @@ function render() {
       });
 
       html += "</tr>";
-      return;
-    }
-
-    // KÉT FORDULÓ ÖSSZETETT EREDMÉNY
-    if (active === "osszetett") {
-
-      const nr = String(row[2] ?? "").trim();
-      const name = String(row[5] ?? "").trim();
-
-      if (nr === "" || name === "") return;
-
-      html += "<tr>";
-
-      selectedColumns.forEach(index => {
-        html += "<td>" + esc(row[index] ?? "") + "</td>";
-      });
-
-      html += "</tr>";
-    }
-
-  });
+    });
+  }
 
   html += "</tbody></table></div>";
 
