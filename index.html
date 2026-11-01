@@ -212,26 +212,6 @@ footer {
   padding: 9px;
 }
 
-/* Kategória és eredménycsoportok egy sorban */
-.table-wrap.combined-wrap .category-content {
-  display: grid;
-  grid-template-columns: minmax(100px, 1fr) repeat(3, minmax(140px, 1fr));
-  align-items: center;
-  gap: 12px;
-  width: 100%;
-}
-
-.table-wrap.combined-wrap .category-name {
-  font-weight: bold;
-  text-align: left;
-}
-
-.table-wrap.combined-wrap .round-heading {
-  text-align: center;
-  font-weight: bold;
-  white-space: normal;
-}
-
 @media (max-width: 600px) {
   .table-wrap.combined-wrap table {
     font-size: 11px;
@@ -240,15 +220,6 @@ footer {
   .table-wrap.combined-wrap th,
   .table-wrap.combined-wrap td {
     padding: 6px 5px;
-  }
-
-  .table-wrap.combined-wrap .category-content {
-    grid-template-columns: minmax(85px, 1fr) repeat(3, minmax(115px, 1fr));
-    gap: 8px;
-  }
-
-  .table-wrap.combined-wrap .round-heading {
-    font-size: 11px;
   }
 }
 </style>
@@ -428,23 +399,103 @@ function render() {
 
   let html =
     '<div class="table-wrap' + combinedClass +
-    '"><table><thead><tr>';
+    '"><table><thead>';
 
-  selectedColumns.forEach(index => {
-    if (headers[index] !== undefined) {
-      let headerValue = headers[index];
+  if (active === "osszetett") {
+    // Kétszintű fejléc: eredménycsoportok, alattuk Idő / Hibapont / Hely
+    const subHeaders = selectedColumns.map(index =>
+      String(headers[index] ?? "").trim()
+    );
 
-      const className =
-        isLeftAlignedColumn(index) ? ' class="left"' : "";
+    const normalize = value =>
+      value.toLocaleLowerCase("hu-HU").replace(/[\s.]/g, "");
 
-      html +=
-        "<th" + className + ">" +
-        esc(headerValue) +
-        "</th>";
+    const groupNames = [
+      "I. forduló eredménye",
+      "II. forduló eredménye",
+      "Összetett eredmény"
+    ];
+
+    let groupStarts = [];
+
+    for (let i = 0; i <= subHeaders.length - 3; i++) {
+      const a = normalize(subHeaders[i]);
+      const b = normalize(subHeaders[i + 1]);
+      const c = normalize(subHeaders[i + 2]);
+
+      if (
+        (a === "idő" || a === "ido") &&
+        b.includes("hibapont") &&
+        c === "hely"
+      ) {
+        groupStarts.push(i);
+        i += 2;
+      }
     }
-  });
 
-  html += "</tr></thead><tbody>";
+    html += "<tr>";
+
+    let columnIndex = 0;
+    let groupIndex = 0;
+
+    while (columnIndex < selectedColumns.length) {
+      if (groupStarts.includes(columnIndex)) {
+        html += '<th colspan="3">' +
+          esc(groupNames[groupIndex] || "Eredmény") +
+          "</th>";
+
+        columnIndex += 3;
+        groupIndex++;
+      } else {
+        const headerValue = headers[selectedColumns[columnIndex]] ?? "";
+
+        const className =
+          isLeftAlignedColumn(selectedColumns[columnIndex])
+            ? ' class="left"' : "";
+
+        html += "<th rowspan=\"2\"" + className + ">" +
+          esc(headerValue) +
+          "</th>";
+
+        columnIndex++;
+      }
+    }
+
+    html += "</tr><tr>";
+
+    selectedColumns.forEach((index, i) => {
+      if (groupStarts.some(start => i >= start && i < start + 3)) {
+        const className =
+          isLeftAlignedColumn(index) ? ' class="left"' : "";
+
+        html += "<th" + className + ">" +
+          esc(headers[index] ?? "") +
+          "</th>";
+      }
+    });
+
+    html += "</tr>";
+
+  } else {
+    html += "<tr>";
+
+    selectedColumns.forEach(index => {
+      if (headers[index] !== undefined) {
+        const headerValue = headers[index];
+
+        const className =
+          isLeftAlignedColumn(index) ? ' class="left"' : "";
+
+        html += "<th" + className + ">" +
+          esc(headerValue) +
+          "</th>";
+      }
+    });
+
+    html += "</tr>";
+  }
+
+  html += "</thead><tbody>";
 
   // STARTLISTÁK
   if (
@@ -485,23 +536,11 @@ function render() {
         categoryName !== "" &&
         categoryText.includes("Kategória:");
 
-      // Kategóriasor: kategória + a három eredményfelirat egy sorban
+      // Kategóriasor: csak a kategória megnevezése
       if (isCategory) {
         html += '<tr class="category-row">';
         html += '<td colspan="' + selectedColumns.length + '">';
-
-        html += '<div class="category-content">';
-
-        html += '<div class="category-name">';
         html += esc(categoryName);
-        html += '</div>';
-
-        html += '<div class="round-heading">I. forduló eredménye</div>';
-        html += '<div class="round-heading">II. forduló eredménye</div>';
-        html += '<div class="round-heading">Összetett eredmény</div>';
-
-        html += '</div>';
-
         html += "</td></tr>";
         return;
       }
@@ -553,11 +592,12 @@ function render() {
 
         html += '<tr class="category-row">';
         html += '<td colspan="' + selectedColumns.length + '">';
+
         html += esc(
           cell1 + "  |  " + details.join("  |  ")
         );
-        html += "</td></tr>";
 
+        html += "</td></tr>";
         return;
       }
 
