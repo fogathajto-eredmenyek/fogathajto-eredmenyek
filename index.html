@@ -37,19 +37,12 @@ header h1 {
   margin: 0 0 7px;
 }
 
-header p {
-  margin: 0;
-  opacity: .9;
-}
-
-/* Verseny helyszíne és dátuma */
 header .event-info {
   font-size: 14px;
   margin: 8px 0;
   opacity: .95;
 }
 
-/* Élő eredmények és nem hivatalos státusz */
 header .live-status {
   margin: 10px 0 0;
   font-size: 14px;
@@ -132,7 +125,6 @@ th.left {
   text-align: left;
 }
 
-/* Kategóriafejléc */
 .category-row td {
   background: #dce7f3;
   color: #17365d;
@@ -162,10 +154,7 @@ footer {
   padding: 20px;
 }
 
-/* =====================================================
-   KÉT FORDULÓ ÖSSZETETT EREDMÉNY
-   ===================================================== */
-
+/* KÉT FORDULÓ ÖSSZETETT EREDMÉNY */
 .table-wrap.combined-wrap table {
   width: max-content;
   min-width: 100%;
@@ -209,9 +198,20 @@ footer {
   box-shadow: 3px 0 5px #00000012;
 }
 
-/* Rögzített fejléc */
-.table-wrap.combined-wrap thead th {
-  z-index: 6;
+/* Kategóriánként megjelenő csoportfejlécek */
+.table-wrap.combined-wrap .category-row th {
+  background: #dce7f3 !important;
+  color: #17365d;
+  font-weight: 700;
+  text-align: center;
+  position: static !important;
+}
+
+.table-wrap.combined-wrap .combined-subheader th {
+  background: #eaf0f7 !important;
+  color: #17365d;
+  font-weight: 700;
+  position: static !important;
 }
 
 /* Kategóriasorok */
@@ -222,22 +222,6 @@ footer {
   padding: 9px;
 }
 
-/* Kategória neve és eredménycsoportok */
-.table-wrap.combined-wrap .category-row .category-title {
-  font-size: 15px;
-  font-weight: 700;
-  text-align: left;
-}
-
-.table-wrap.combined-wrap .category-row .result-group-label {
-  text-align: center;
-  font-size: 12px;
-  font-weight: 700;
-  color: #24558a;
-  border-left: 1px solid #c5d3e3;
-}
-
-/* Mobilnézet */
 @media (max-width: 600px) {
   .table-wrap.combined-wrap table {
     font-size: 11px;
@@ -246,14 +230,6 @@ footer {
   .table-wrap.combined-wrap th,
   .table-wrap.combined-wrap td {
     padding: 6px 5px;
-  }
-
-  .table-wrap.combined-wrap .category-row .category-title {
-    font-size: 13px;
-  }
-
-  .table-wrap.combined-wrap .category-row .result-group-label {
-    font-size: 11px;
   }
 }
 </style>
@@ -293,8 +269,10 @@ footer {
 </footer>
 
 <script>
+"use strict";
+
 const DATA_URL =
-"https://raw.githubusercontent.com/fogathajto-eredmenyek/fogathajto-eredmenyek/main/eredmenyek.json";
+  "https://raw.githubusercontent.com/fogathajto-eredmenyek/fogathajto-eredmenyek/main/eredmenyek.json";
 
 const sheets = [
   { key: "startlista1", name: "Startlista 1. Ford." },
@@ -307,16 +285,20 @@ let active = sheets[0].key;
 let currentData = {};
 
 const tabs = document.getElementById("tabs");
+const resultsRoot = document.getElementById("results");
+const statusRoot = document.getElementById("status");
 
+/* A fülek létrehozása */
 sheets.forEach(sheet => {
   const button = document.createElement("button");
 
+  button.type = "button";
   button.className =
     "tab" + (sheet.key === active ? " active" : "");
 
   button.textContent = sheet.name;
 
-  button.onclick = () => {
+  button.addEventListener("click", () => {
     active = sheet.key;
 
     document.querySelectorAll(".tab").forEach(tab => {
@@ -324,7 +306,7 @@ sheets.forEach(sheet => {
     });
 
     render();
-  };
+  });
 
   tabs.appendChild(button);
 });
@@ -340,9 +322,8 @@ function esc(value) {
 }
 
 function emptyRow(row) {
-  return row.every(value =>
-    String(value ?? "").trim() === ""
-  );
+  return Array.isArray(row) &&
+    row.every(value => String(value ?? "").trim() === "");
 }
 
 function isLeftAlignedColumn(index) {
@@ -353,11 +334,10 @@ function isLeftAlignedColumn(index) {
     return index === 4 || index === 5;
   }
 
-  if (active === "eredmeny1") {
-    return index === 5 || index === 6;
-  }
-
-  if (active === "osszetett") {
+  if (
+    active === "eredmeny1" ||
+    active === "osszetett"
+  ) {
     return index === 5 || index === 6;
   }
 
@@ -368,7 +348,7 @@ function createCells(row, selectedColumns) {
   let html = "";
 
   selectedColumns.forEach(index => {
-    let value = row[index] ?? "";
+    const value = row[index] ?? "";
 
     const className =
       isLeftAlignedColumn(index) ? ' class="left"' : "";
@@ -382,65 +362,11 @@ function createCells(row, selectedColumns) {
   return html;
 }
 
-function createCombinedCategoryRow(categoryName, columnCount) {
-  /*
-    A kategória neve az első 5 megjelenített oszlopot foglalja el.
-    A fennmaradó területet három eredménycsoport között osztjuk el.
-  */
-
-  const categoryColumns = Math.min(5, columnCount);
-  const remaining = columnCount - categoryColumns;
-
-  const firstRoundColumns = Math.ceil(remaining / 3);
-  const secondRoundColumns = Math.ceil(
-    (remaining - firstRoundColumns) / 2
-  );
-  const overallColumns =
-    remaining - firstRoundColumns - secondRoundColumns;
-
-  let html = '<tr class="category-row">';
-
-  html +=
-    '<td colspan="' + categoryColumns +
-    '" class="category-title">' +
-    esc(categoryName) +
-    '</td>';
-
-  if (firstRoundColumns > 0) {
-    html +=
-      '<td colspan="' + firstRoundColumns +
-      '" class="result-group-label">' +
-      'I. forduló eredménye' +
-      '</td>';
-  }
-
-  if (secondRoundColumns > 0) {
-    html +=
-      '<td colspan="' + secondRoundColumns +
-      '" class="result-group-label">' +
-      'II. forduló eredménye' +
-      '</td>';
-  }
-
-  if (overallColumns > 0) {
-    html +=
-      '<td colspan="' + overallColumns +
-      '" class="result-group-label">' +
-      'Összetett eredmény' +
-      '</td>';
-  }
-
-  html += "</tr>";
-
-  return html;
-}
-
 function render() {
   const rows = currentData[active] || [];
-  const root = document.getElementById("results");
 
-  if (!rows.length) {
-    root.innerHTML =
+  if (!Array.isArray(rows) || rows.length === 0) {
+    resultsRoot.innerHTML =
       '<div class="empty">Még nincsenek közzétett eredmények.</div>';
     return;
   }
@@ -460,7 +386,7 @@ function render() {
     headerIndex = 0;
   }
 
-  const headers = rows[headerIndex];
+  const headers = rows[headerIndex] || [];
 
   let selectedColumns = [];
 
@@ -474,7 +400,6 @@ function render() {
     selectedColumns = [0, 1, 2, 3, 4, 5, 6, 7];
 
   } else if (active === "osszetett") {
-    // Összetett eredmények megjelenítendő oszlopai
     selectedColumns = [
       2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
     ];
@@ -485,25 +410,33 @@ function render() {
 
   let html =
     '<div class="table-wrap' + combinedClass +
-    '"><table><thead><tr>';
+    '"><table><thead>';
 
-  selectedColumns.forEach(index => {
-    if (headers[index] !== undefined) {
-      let headerValue = headers[index];
+  /* Összetett eredmény: nincs külön általános fejléc */
+  if (active === "osszetett") {
+    html += "</thead><tbody>";
 
-      const className =
-        isLeftAlignedColumn(index) ? ' class="left"' : "";
+  } else {
+    html += "<tr>";
 
-      html +=
-        "<th" + className + ">" +
-        esc(headerValue) +
-        "</th>";
-    }
-  });
+    selectedColumns.forEach(index => {
+      if (headers[index] !== undefined) {
+        const headerValue = headers[index];
 
-  html += "</tr></thead><tbody>";
+        const className =
+          isLeftAlignedColumn(index) ? ' class="left"' : "";
 
-  // STARTLISTÁK
+        html +=
+          "<th" + className + ">" +
+          esc(headerValue) +
+          "</th>";
+      }
+    });
+
+    html += "</tr></thead><tbody>";
+  }
+
+  /* STARTLISTÁK */
   if (
     active === "startlista1" ||
     active === "startlista2"
@@ -526,9 +459,9 @@ function render() {
     });
   }
 
-  // KÉT FORDULÓ ÖSSZETETT EREDMÉNY
+  /* KÉT FORDULÓ ÖSSZETETT EREDMÉNY */
   else if (active === "osszetett") {
-    rows.forEach((row, rowIndex) => {
+    rows.forEach(row => {
       if (!Array.isArray(row) || emptyRow(row)) return;
 
       if (row.some(value =>
@@ -542,22 +475,53 @@ function render() {
         categoryName !== "" &&
         categoryText.includes("Kategória:");
 
-      // Kategóriasor: kategórianév és eredménycsoportok
+      /* Kategória és fordulófejlécek */
       if (isCategory) {
-        html += createCombinedCategoryRow(
-          categoryName,
-          selectedColumns.length
-        );
+        html += '<tr class="category-row">';
+
+        html +=
+          '<td colspan="5">' +
+          esc(categoryName) +
+          '</td>';
+
+        html +=
+          '<th colspan="3">I. forduló eredménye</th>';
+
+        html +=
+          '<th colspan="3">II. forduló eredménye</th>';
+
+        html +=
+          '<th colspan="3">Összetett eredmény</th>';
+
+        html += "</tr>";
+
+        /* Idő – Hibapont – Hely részfejlécek */
+        html += '<tr class="combined-subheader">';
+
+        html += '<td colspan="5"></td>';
+
+        const subHeaders = [
+          "Idő", "Hibapont", "Hely",
+          "Idő", "Hibapont", "Hely",
+          "Idő", "Hibapont", "Hely"
+        ];
+
+        subHeaders.forEach(label => {
+          html += "<th>" + esc(label) + "</th>";
+        });
+
+        html += "</tr>";
+
         return;
       }
 
-      // Fejléc kihagyása
+      /* Ismétlődő oszlopfejléc kihagyása */
       if (
         String(row[1] ?? "").trim() === "Hely" &&
         String(row[2] ?? "").trim() === "Nr."
       ) return;
 
-      // Versenyzői sor ellenőrzése
+      /* Versenyzői sor ellenőrzése */
       const nr = String(row[2] ?? "").trim();
       const name = String(row[5] ?? "").trim();
 
@@ -569,7 +533,7 @@ function render() {
     });
   }
 
-  // EREDMÉNY 1. FORDULÓ
+  /* EREDMÉNY 1. FORDULÓ */
   else if (active === "eredmeny1") {
     rows.forEach((row, rowIndex) => {
       if (!Array.isArray(row) || emptyRow(row)) return;
@@ -597,10 +561,14 @@ function render() {
         ].filter(Boolean);
 
         html += '<tr class="category-row">';
-        html += '<td colspan="' + selectedColumns.length + '">';
+
+        html +=
+          '<td colspan="' + selectedColumns.length + '">';
+
         html += esc(
           cell1 + "  |  " + details.join("  |  ")
         );
+
         html += "</td></tr>";
 
         return;
@@ -626,9 +594,10 @@ function render() {
 
   html += "</tbody></table></div>";
 
-  root.innerHTML = html;
+  resultsRoot.innerHTML = html;
 }
 
+/* Adatok frissítése */
 async function refresh() {
   try {
     const response = await fetch(
@@ -642,21 +611,26 @@ async function refresh() {
 
     const data = await response.json();
 
+    if (!data || typeof data !== "object") {
+      throw new Error("A JSON-adat formátuma nem megfelelő.");
+    }
+
     currentData = data;
     render();
 
-    document.getElementById("status").textContent =
+    statusRoot.textContent =
       "Utolsó frissítés: " +
       new Date().toLocaleTimeString("hu-HU");
 
   } catch (error) {
-    document.getElementById("status").textContent =
+    statusRoot.textContent =
       "Kapcsolódási hiba. Újrapróbálkozás…";
 
     console.error("Eredményfrissítési hiba:", error);
   }
 }
 
+/* Indítás */
 refresh();
 setInterval(refresh, 15000);
 </script>
