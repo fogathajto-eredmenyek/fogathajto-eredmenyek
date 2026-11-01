@@ -4,7 +4,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Fülöpi Fogathajtó Verseny – Élő eredmények</title>
+<title>🏆 Fülöpi Fogathajtó Verseny – Élő eredmények</title>
 
 <style>
 :root {
@@ -36,12 +36,6 @@ header {
 header h1 {
   font-size: clamp(22px, 4vw, 32px);
   margin: 0 0 7px;
-}
-
-header h2 {
-  font-size: clamp(18px, 3vw, 25px);
-  margin: 10px 0;
-  font-weight: 700;
 }
 
 header .event-info {
@@ -218,31 +212,7 @@ footer {
   padding: 9px;
 }
 
-/* Kategória neve és eredménycsoportok */
-.table-wrap.combined-wrap .category-row .category-title {
-  font-size: 15px;
-  font-weight: 700;
-  text-align: left;
-}
-
-.table-wrap.combined-wrap .category-row .result-group-label {
-  text-align: center;
-  font-size: 12px;
-  font-weight: 700;
-  color: #24558a;
-  border-left: 1px solid #c5d3e3;
-}
-
 @media (max-width: 600px) {
-  header {
-    padding: 20px 10px;
-  }
-
-  header .event-info,
-  header .live-status {
-    font-size: 12px;
-  }
-
   .table-wrap.combined-wrap table {
     font-size: 11px;
   }
@@ -251,14 +221,6 @@ footer {
   .table-wrap.combined-wrap td {
     padding: 6px 5px;
   }
-
-  .table-wrap.combined-wrap .category-row .category-title {
-    font-size: 13px;
-  }
-
-  .table-wrap.combined-wrap .category-row .result-group-label {
-    font-size: 11px;
-  }
 }
 </style>
 </head>
@@ -266,9 +228,7 @@ footer {
 <body>
 
 <header>
-  <h1>🏆 Fogathajtó verseny</h1>
-
-  <h2>Fülöpi Fogathajtó Verseny</h2>
+  <h1>🏆 Fülöpi Fogathajtó Verseny</h1>
 
   <div class="event-info">
     📍 Fülöp &nbsp; | &nbsp; 📅 2026. 10. 28.
@@ -352,6 +312,7 @@ function emptyRow(row) {
 }
 
 function isLeftAlignedColumn(index) {
+
   if (
     active === "startlista1" ||
     active === "startlista2"
@@ -371,9 +332,11 @@ function isLeftAlignedColumn(index) {
 }
 
 function createCells(row, selectedColumns) {
+
   let html = "";
 
   selectedColumns.forEach(index => {
+
     let value = row[index] ?? "";
 
     const className =
@@ -388,62 +351,8 @@ function createCells(row, selectedColumns) {
   return html;
 }
 
-function createCombinedCategoryRow(categoryName, columnCount) {
-  /*
-    A kategória neve az első 5 megjelenített oszlopot foglalja el.
-    A fennmaradó oszlopok három eredménycsoport között oszlanak el.
-  */
-
-  const categoryColumns = Math.min(5, columnCount);
-  const remaining = columnCount - categoryColumns;
-
-  const firstRoundColumns = Math.ceil(remaining / 3);
-
-  const secondRoundColumns = Math.ceil(
-    (remaining - firstRoundColumns) / 2
-  );
-
-  const overallColumns =
-    remaining - firstRoundColumns - secondRoundColumns;
-
-  let html = '<tr class="category-row">';
-
-  html +=
-    '<td colspan="' + categoryColumns +
-    '" class="category-title">' +
-    esc(categoryName) +
-    '</td>';
-
-  if (firstRoundColumns > 0) {
-    html +=
-      '<td colspan="' + firstRoundColumns +
-      '" class="result-group-label">' +
-      'I. forduló eredménye' +
-      '</td>';
-  }
-
-  if (secondRoundColumns > 0) {
-    html +=
-      '<td colspan="' + secondRoundColumns +
-      '" class="result-group-label">' +
-      'II. forduló eredménye' +
-      '</td>';
-  }
-
-  if (overallColumns > 0) {
-    html +=
-      '<td colspan="' + overallColumns +
-      '" class="result-group-label">' +
-      'Összetett eredmény' +
-      '</td>';
-  }
-
-  html += "</tr>";
-
-  return html;
-}
-
 function render() {
+
   const rows = currentData[active] || [];
   const root = document.getElementById("results");
 
@@ -473,15 +382,19 @@ function render() {
   let selectedColumns = [];
 
   if (active === "startlista1") {
+
     selectedColumns = [1, 2, 3, 4, 5, 6];
 
   } else if (active === "startlista2") {
+
     selectedColumns = [1, 2, 3, 4, 5, 6];
 
   } else if (active === "eredmeny1") {
+
     selectedColumns = [0, 1, 2, 3, 4, 5, 6, 7];
 
   } else if (active === "osszetett") {
+
     // Összetett eredmények megjelenítendő oszlopai
     selectedColumns = [
       2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
@@ -496,7 +409,9 @@ function render() {
     '"><table><thead><tr>';
 
   selectedColumns.forEach(index => {
+
     if (headers[index] !== undefined) {
+
       let headerValue = headers[index];
 
       const className =
@@ -516,7 +431,9 @@ function render() {
     active === "startlista1" ||
     active === "startlista2"
   ) {
+
     rows.slice(headerIndex + 1).forEach(row => {
+
       if (!Array.isArray(row) || emptyRow(row)) return;
 
       if (row.some(value =>
@@ -536,7 +453,9 @@ function render() {
 
   // KÉT FORDULÓ ÖSSZETETT EREDMÉNY
   else if (active === "osszetett") {
+
     rows.forEach((row, rowIndex) => {
+
       if (!Array.isArray(row) || emptyRow(row)) return;
 
       if (row.some(value =>
@@ -550,12 +469,14 @@ function render() {
         categoryName !== "" &&
         categoryText.includes("Kategória:");
 
-      // Kategóriasor: kategórianév és eredménycsoportok
+      // Kategóriasor: kizárólag a kategória neve jelenik meg
       if (isCategory) {
-        html += createCombinedCategoryRow(
-          categoryName,
-          selectedColumns.length
-        );
+
+        html += '<tr class="category-row">';
+        html += '<td colspan="' + selectedColumns.length + '">';
+        html += esc(categoryName);
+        html += "</td></tr>";
+
         return;
       }
 
@@ -579,7 +500,9 @@ function render() {
 
   // EREDMÉNY 1. FORDULÓ
   else if (active === "eredmeny1") {
+
     rows.forEach((row, rowIndex) => {
+
       if (!Array.isArray(row) || emptyRow(row)) return;
 
       if (row.some(value =>
@@ -598,6 +521,7 @@ function render() {
         cell6.includes("Alapidő:");
 
       if (isCategory) {
+
         const details = [
           cell4,
           cell5,
@@ -638,7 +562,9 @@ function render() {
 }
 
 async function refresh() {
+
   try {
+
     const response = await fetch(
       DATA_URL + "?t=" + Date.now(),
       { cache: "no-store" }
@@ -658,6 +584,7 @@ async function refresh() {
       new Date().toLocaleTimeString("hu-HU");
 
   } catch (error) {
+
     document.getElementById("status").textContent =
       "Kapcsolódási hiba. Újrapróbálkozás…";
 
