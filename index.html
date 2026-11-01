@@ -212,7 +212,7 @@ function esc(value) {
     ">": "&gt;",
     '"': "&quot;",
     "'": "&#39;"
-  }[character]));
+  }[character]);
 }
 
 function emptyRow(row) {
@@ -292,6 +292,20 @@ function render() {
         const name = String(row[4] ?? "").trim();
 
         if (nr === "" || name === "") return;
+
+        // KIZÁRÓLAG A 2. FORDULÓ STARTLISTÁJÁN:
+        // a dátumot és pontokat tartalmazó technikai sor kihagyása.
+        if (active === "startlista2") {
+          const rowText = row
+            .map(value => String(value ?? "").trim())
+            .join(" ");
+
+          const isTechnicalRow =
+            / dátum[: ]/i.test(" " + rowText) ||
+            / pontok?[: ]/i.test(" " + rowText);
+
+          if (isTechnicalRow) return;
+        }
       }
 
       // KÉT FORDULÓ ÖSSZETETT EREDMÉNY
@@ -315,9 +329,6 @@ function render() {
   } else {
 
     // EREDMÉNY 1. FORDULÓ
-    // A kategóriafejléceket a teljes tömbben keressük,
-    // így azok a táblázat fejlécét megelőző sorokból sem vesznek el.
-
     rows.forEach((row, rowIndex) => {
 
       if (!Array.isArray(row) || emptyRow(row)) return;
@@ -354,7 +365,7 @@ function render() {
         return;
       }
 
-      // A táblázat oszlopfejléce és a "Versenyző adatai" sor kihagyása
+      // Fejléc és "Versenyző adatai" sor kihagyása
       if (rowIndex === headerIndex) return;
 
       if (
@@ -362,8 +373,7 @@ function render() {
         String(row[4] ?? "").trim() === "Versenyző adatai"
       ) return;
 
-      // CSAK valódi versenyzői sor:
-      // számszerű rajtszám és versenyzőnév szükséges
+      // Csak valódi versenyzői sor
       const nr = String(row[1] ?? "").trim();
       const name = String(row[4] ?? "").trim();
 
