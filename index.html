@@ -238,7 +238,7 @@ function isLeftAlignedColumn(index) {
   return false;
 }
 
-// Cellák létrehozása
+// Táblázat celláinak létrehozása
 function createCells(row, selectedColumns) {
   let html = "";
 
@@ -246,19 +246,20 @@ function createCells(row, selectedColumns) {
     let value = row[index] ?? "";
 
     /*
-      EREDMÉNY 1. FORDULÓ:
-      Nr. = startszám
-      Kocsi száma = kocsiszám
-      Helyezés = helyezés
+      EREDMÉNY 1. FORDULÓ
 
-      A három adatot külön, a megfelelő
-      oszlopban jelenítjük meg.
+      A JSON eredménylap tényleges szerkezete alapján:
+      Helyezés     = row[8]
+      Nr.           = row[1]
+      Kocsi száma   = row[2]
+
+      A többi oszlop változatlan marad.
     */
 
     if (active === "eredmeny1") {
+      if (index === 0) value = row[8] ?? "";
       if (index === 1) value = row[1] ?? "";
       if (index === 2) value = row[2] ?? "";
-      if (index === 3) value = row[3] ?? "";
     }
 
     const className =
@@ -322,6 +323,13 @@ function render() {
   selectedColumns.forEach(index => {
     if (headers[index] !== undefined) {
       let headerValue = headers[index];
+
+      // Az eredménylap első három oszlopának fejlécei
+      if (active === "eredmeny1") {
+        if (index === 0) headerValue = "Helyezés";
+        if (index === 1) headerValue = "Nr.";
+        if (index === 2) headerValue = "Kocsi száma";
+      }
 
       const className =
         isLeftAlignedColumn(index) ? ' class="left"' : "";
@@ -465,6 +473,7 @@ function render() {
         String(row[4] ?? "").trim() === "Versenyző adatai"
       ) return;
 
+      // A Nr. a row[1], a név a row[4] mezőben található.
       const nr = String(row[1] ?? "").trim();
       const name = String(row[4] ?? "").trim();
 
