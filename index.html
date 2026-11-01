@@ -212,18 +212,24 @@ footer {
   padding: 9px;
 }
 
-/* Kategória és fordulófeliratok */
-.table-wrap.combined-wrap .category-title {
-  font-weight: bold;
-  margin-right: 22px;
+/* Kategória és eredménycsoportok egy sorban */
+.table-wrap.combined-wrap .category-content {
+  display: grid;
+  grid-template-columns: minmax(100px, 1fr) repeat(3, minmax(140px, 1fr));
+  align-items: center;
+  gap: 12px;
+  width: 100%;
 }
 
-.table-wrap.combined-wrap .round-labels {
-  display: inline-flex;
-  flex-wrap: wrap;
-  gap: 24px;
-  font-size: 13px;
+.table-wrap.combined-wrap .category-name {
   font-weight: bold;
+  text-align: left;
+}
+
+.table-wrap.combined-wrap .round-heading {
+  text-align: center;
+  font-weight: bold;
+  white-space: normal;
 }
 
 @media (max-width: 600px) {
@@ -236,9 +242,13 @@ footer {
     padding: 6px 5px;
   }
 
-  .table-wrap.combined-wrap .round-labels {
-    gap: 12px;
-    font-size: 12px;
+  .table-wrap.combined-wrap .category-content {
+    grid-template-columns: minmax(85px, 1fr) repeat(3, minmax(115px, 1fr));
+    gap: 8px;
+  }
+
+  .table-wrap.combined-wrap .round-heading {
+    font-size: 11px;
   }
 }
 </style>
@@ -475,20 +485,22 @@ function render() {
         categoryName !== "" &&
         categoryText.includes("Kategória:");
 
-      // Kategóriasor: kategória neve + a három eredménycsoport felirata
+      // Kategóriasor: kategória + a három eredményfelirat egy sorban
       if (isCategory) {
         html += '<tr class="category-row">';
         html += '<td colspan="' + selectedColumns.length + '">';
 
-        html += '<span class="category-title">';
-        html += esc(categoryName);
-        html += '</span>';
+        html += '<div class="category-content">';
 
-        html += '<span class="round-labels">';
-        html += '<span>I. forduló eredménye</span>';
-        html += '<span>II. forduló eredménye</span>';
-        html += '<span>Összetett eredmény</span>';
-        html += '</span>';
+        html += '<div class="category-name">';
+        html += esc(categoryName);
+        html += '</div>';
+
+        html += '<div class="round-heading">I. forduló eredménye</div>';
+        html += '<div class="round-heading">II. forduló eredménye</div>';
+        html += '<div class="round-heading">Összetett eredmény</div>';
+
+        html += '</div>';
 
         html += "</td></tr>";
         return;
