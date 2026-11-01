@@ -271,12 +271,12 @@ function render() {
 
   html += "</tr></thead><tbody>";
 
-  // A többi fül eredeti, változatlan sorfeldolgozása.
+  // STARTLISTÁK ÉS KÉT FORDULÓ ÖSSZETETT EREDMÉNY
   if (active !== "eredmeny1") {
 
     rows.slice(headerIndex + 1).forEach(row => {
 
-      if (emptyRow(row)) return;
+      if (!Array.isArray(row) || emptyRow(row)) return;
 
       if (row.some(value =>
         String(value ?? "").trim().startsWith("#")
@@ -287,22 +287,20 @@ function render() {
         active === "startlista1" ||
         active === "startlista2"
       ) {
-      const nr = String(row[1] ?? "").trim();
-      const name = String(row[4] ?? "").trim();
+        const nr = String(row[1] ?? "").trim();
+        const name = String(row[4] ?? "").trim();
 
-      // Csak valódi, egész sorszámú versenyző jelenjen meg
-      if (!/^\d+$/.test(nr) || name === "") return;
+        // Csak valódi, egész sorszámú versenyző jelenjen meg
+        if (!/^\d+$/.test(nr) || name === "") return;
       }
 
-// KÉT FORDULÓ ÖSSZETETT EREDMÉNY
-else if (active === "osszetett") {
+      // KÉT FORDULÓ ÖSSZETETT EREDMÉNY
+      else if (active === "osszetett") {
+        const nr = String(row[2] ?? "").trim();
+        const name = String(row[5] ?? "").trim();
 
-  const nr = String(row[2] ?? "").trim();
-  const name = String(row[5] ?? "").trim();
-
-  if (nr === "" || name === "") return;
-}
-}
+        // Csak valódi, egész sorszámú versenyző jelenjen meg
+        if (!/^\d+$/.test(nr) || name === "") return;
       }
 
       html += "<tr>";
@@ -317,8 +315,7 @@ else if (active === "osszetett") {
   } else {
 
     // EREDMÉNY 1. FORDULÓ
-    // A kategóriafejléceket a teljes tömbben keressük,
-    // így azok a táblázat fejlécét megelőző sorokból sem vesznek el.
+    // Kategóriafejlécek keresése a teljes tömbben
 
     rows.forEach((row, rowIndex) => {
 
@@ -356,7 +353,7 @@ else if (active === "osszetett") {
         return;
       }
 
-      // A táblázat oszlopfejléce és a "Versenyző adatai" sor kihagyása
+      // Táblázatfejléc és "Versenyző adatai" sor kihagyása
       if (rowIndex === headerIndex) return;
 
       if (
@@ -364,12 +361,12 @@ else if (active === "osszetett") {
         String(row[4] ?? "").trim() === "Versenyző adatai"
       ) return;
 
-    // CSAK valódi versenyzői sor
-const nr = String(row[1] ?? "").trim();
-const name = String(row[4] ?? "").trim();
+      // Csak valódi versenyzői sor
+      const nr = String(row[1] ?? "").trim();
+      const name = String(row[4] ?? "").trim();
 
-// Nyomtatási, idő- és elválasztó sorok kizárása
-if (!/^\d+$/.test(nr) || name === "") return;
+      // Nyomtatási, idő- és elválasztó sorok kizárása
+      if (!/^\d+$/.test(nr) || name === "") return;
 
       html += "<tr>";
 
