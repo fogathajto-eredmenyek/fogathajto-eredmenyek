@@ -303,20 +303,30 @@ function render() {
 
   // Adatsorok
 rows.slice(headerIndex + 1).forEach(row => {
-if (emptyRow(row)) return;
 
-// Csak a tényleges versenyzői sorok jelenjenek meg
-let nrIndex;
+    // Üres sorok kihagyása
+    if (emptyRow(row)) return;
 
-if (active === "eredmeny1") {
-    nrIndex = 1;
-} else if (active === "osszetett") {
-    nrIndex = 2;
-} else {
-    nrIndex = 1;
-}
+    // A rajtszám oszlopának meghatározása
+    let nrIndex = 1;
 
-if (String(row[nrIndex] ?? "").trim() === "") return;
+    if (active === "osszetett") {
+        nrIndex = 2;
+    }
+
+    // Csak olyan sor jelenjen meg, amelyben van rajtszám
+    const rajtszam = String(row[nrIndex] ?? "").trim();
+
+    if (rajtszam === "" || !/^\d+$/.test(rajtszam)) return;
+
+    html += "<tr>";
+
+    selectedColumns.forEach(index => {
+        html += "<td>" + esc(row[index] ?? "") + "</td>";
+    });
+
+    html += "</tr>";
+});
 
     html += "<tr>";
 
