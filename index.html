@@ -368,7 +368,13 @@ function render() {
       const name = String(row[4] ?? "").trim();
 
     // A 2. forduló nyomtatási időt tartalmazó sorának kihagyása
-    if (active === "startlista2" && nr.includes(":")) return;
+    if (
+  active === "startlista2" &&
+  (
+    nr === "10:50:02" ||
+    name.includes("……")
+  )
+) return;
 
       if (nr === "" || name === "") return;
 
