@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="hu">
 <head>
@@ -282,7 +283,6 @@ function render() {
         String(value ?? "").trim().startsWith("#")
       )) return;
 
-
       // STARTLISTÁK
       if (
         active === "startlista1" ||
@@ -291,20 +291,7 @@ function render() {
         const nr = String(row[1] ?? "").trim();
         const name = String(row[4] ?? "").trim();
 
-        // A 2. forduló startlistájának
-        // nyomtatási és időadatait kihagyjuk.
-        if (active === "startlista2") {
-          if (
-            nr.includes(":") ||
-            row.some(value =>
-              String(value ?? "").includes("Idő:")
-            )
-          ) return;
-        }
-
         if (nr === "" || name === "") return;
-      }
-
       }
 
       // KÉT FORDULÓ ÖSSZETETT EREDMÉNY
