@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="hu">
 <head>
@@ -300,55 +301,25 @@ function render() {
       return;
     }
 
-// EREDMÉNY 1. FORDULÓ
-if (active === "eredmeny1") {
+    // EREDMÉNY 1. FORDULÓ
+    if (active === "eredmeny1") {
 
-    const nr = String(row[1] ?? "").trim();
-    const name = String(row[4] ?? "").trim();
+      const nr = String(row[1] ?? "").trim();
+      const name = String(row[4] ?? "").trim();
 
-    // Kategóriasor felismerése:
-    // B oszlopban van kategórianév,
-    // a versenyző neve viszont üres
-    const category = String(row[1] ?? "").trim();
+      // Kategóriasor: csak a kategória neve van kitöltve
+      const categoryCell = String(row[9] ?? "").trim();
 
-    if (category !== "" && name === "") {
-
-        // Technikai sorok kizárása
-        const technical = row.some(value => {
-            const text = String(value ?? "").toLowerCase();
-
-            return text.includes("versenyiroda") ||
-                   text.includes("jegyzőkönyv") ||
-                   text.includes("vezetőbíró") ||
-                   text.includes("nyomtatva") ||
-                   text.includes("alapidő") ||
-                   text.includes("pályahossz") ||
-                   text.includes("iram:");
-        });
-
-        if (technical) return;
-
+      if (
+        categoryCell !== "" &&
+        nr === "" &&
+        name === ""
+      ) {
         html += '<tr class="category-row">';
         html += '<td colspan="' + selectedColumns.length + '">';
-        html += esc(category);
+        html += esc(categoryCell);
         html += "</td></tr>";
-
         return;
-    }
-
-    // Csak valódi versenyzői sor jelenjen meg
-    if (nr === "" || name === "") return;
-
-    html += "<tr>";
-
-    selectedColumns.forEach(index => {
-        html += "<td>" + esc(row[index] ?? "") + "</td>";
-    });
-
-    html += "</tr>";
-
-    return;
-}
       }
 
       // Technikai és üres sorok kizárása
