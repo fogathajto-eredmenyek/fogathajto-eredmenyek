@@ -288,10 +288,11 @@ function render() {
         active === "startlista1" ||
         active === "startlista2"
       ) {
-        const nr = String(row[1] ?? "").trim();
-        const name = String(row[4] ?? "").trim();
+      const nr = String(row[1] ?? "").trim();
+      const name = String(row[4] ?? "").trim();
 
-        if (nr === "" || name === "") return;
+      // Csak valódi, egész sorszámú versenyző jelenjen meg
+      if (!/^\d+$/.test(nr) || name === "") return;
       }
 
       // KÉT FORDULÓ ÖSSZETETT EREDMÉNY
