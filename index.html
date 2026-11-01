@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="hu">
 <head>
@@ -301,51 +300,25 @@ function render() {
       return;
     }
 
-
     // EREDMÉNY 1. FORDULÓ
     if (active === "eredmeny1") {
 
       const nr = String(row[1] ?? "").trim();
       const name = String(row[4] ?? "").trim();
 
-      // Kategóriasor: pontosan egy cella tartalmaz szöveget,
-      // és a versenyző neve üres
-      const nonEmptyCells = row
-        .map((value, index) => ({
-          index,
-          value: String(value ?? "").trim()
-        }))
-        .filter(cell => cell.value !== "");
+      // Kategóriasor: csak a kategória neve van kitöltve
+      const categoryCell = String(row[9] ?? "").trim();
 
       if (
-        name === "" &&
-        nonEmptyCells.length === 1 &&
-        !nonEmptyCells[0].value.startsWith("#")
+        categoryCell !== "" &&
+        nr === "" &&
+        name === ""
       ) {
-        const category = nonEmptyCells[0].value;
-
         html += '<tr class="category-row">';
         html += '<td colspan="' + selectedColumns.length + '">';
-        html += esc(category);
+        html += esc(categoryCell);
         html += "</td></tr>";
-
         return;
-      }
-
-      // Csak a tényleges versenyzők jelenjenek meg
-      if (nr === "" || name === "") return;
-
-      html += "<tr>";
-
-      selectedColumns.forEach(index => {
-        html += "<td>" + esc(row[index] ?? "") + "</td>";
-      });
-
-      html += "</tr>";
-
-      return;
-    }
-
       }
 
       // Technikai és üres sorok kizárása
