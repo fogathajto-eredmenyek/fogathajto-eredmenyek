@@ -107,6 +107,12 @@ th, td {
   text-align: center;
   white-space: nowrap;
 }
+
+tbody tr:nth-child(even) {
+  background: #f9fbfd;
+}
+
+/* Kategóriasor */
 .category-row td {
   background: #dce7f3;
   color: #17365d;
@@ -114,9 +120,6 @@ th, td {
   text-align: left;
   font-size: 16px;
   padding: 12px;
-}
-tbody tr:nth-child(even) {
-  background: #f9fbfd;
 }
 
 #status {
@@ -218,22 +221,6 @@ function emptyRow(row) {
   );
 }
 
-// Megvizsgálja, hogy az adott sor valódi versenyzői adatot tartalmaz-e
-function isCompetitorRow(row, nrIndex, nameIndex) {
-  const nr = String(row[nrIndex] ?? "").trim();
-  const name = String(row[nameIndex] ?? "").trim();
-
-  if (nr === "" || name === "") return false;
-
-  // A rajtszámnak számot kell tartalmaznia
-  if (!/^\d+$/.test(nr)) return false;
-
-  // Excel-hibák kizárása
-  if (nr.includes("#") || name.includes("#")) return false;
-
-  return true;
-}
-
 function render() {
   const rows = currentData[active] || [];
   const root = document.getElementById("results");
@@ -285,25 +272,20 @@ function render() {
 
   html += "</tr></thead><tbody>";
 
-   // Adatsorok feldolgozása
-  let currentCategory = "";
-
   rows.slice(headerIndex + 1).forEach(row => {
 
-    // Teljesen üres sor kihagyása
     if (emptyRow(row)) return;
 
-    // Excel-hibák kihagyása
+    // Excel-hibás sorok kihagyása
     if (row.some(value =>
       String(value ?? "").trim().startsWith("#")
     )) return;
 
-    // STARTLISTÁK
+    // STARTLISTÁK – korábban jól működő megjelenítés
     if (
       active === "startlista1" ||
       active === "startlista2"
     ) {
-
       const nr = String(row[1] ?? "").trim();
       const name = String(row[4] ?? "").trim();
 
@@ -316,31 +298,31 @@ function render() {
       });
 
       html += "</tr>";
-
       return;
     }
 
     // EREDMÉNY 1. FORDULÓ
     if (active === "eredmeny1") {
 
-      const category = String(row[9] ?? "").trim();
       const nr = String(row[1] ?? "").trim();
       const name = String(row[4] ?? "").trim();
 
-      // Kategóriasor felismerése
-      if (category !== "" && nr === "" && name === "") {
+      // Kategóriasor: csak a kategória neve van kitöltve
+      const categoryCell = String(row[9] ?? "").trim();
 
-        currentCategory = category;
-
+      if (
+        categoryCell !== "" &&
+        nr === "" &&
+        name === ""
+      ) {
         html += '<tr class="category-row">';
         html += '<td colspan="' + selectedColumns.length + '">';
-        html += esc(category);
+        html += esc(categoryCell);
         html += "</td></tr>";
-
         return;
       }
 
-      // Csak valódi versenyző
+      // Technikai és üres sorok kizárása
       if (nr === "" || name === "") return;
 
       html += "<tr>";
@@ -350,7 +332,6 @@ function render() {
       });
 
       html += "</tr>";
-
       return;
     }
 
@@ -360,7 +341,6 @@ function render() {
       const nr = String(row[2] ?? "").trim();
       const name = String(row[5] ?? "").trim();
 
-      // Üres sorok kihagyása
       if (nr === "" || name === "") return;
 
       html += "<tr>";
@@ -370,56 +350,8 @@ function render() {
       });
 
       html += "</tr>";
-
     }
 
-  });
-
-    // Üres és hibás sorok kizárása
-    if (emptyRow(row)) return;
-
-    if (row.some(value =>
-      String(value ?? "").trim().startsWith("#")
-    )) return;
-
-    // Startlisták: versenyző neve és rajtszáma alapján szűrés
-    if (
-      active === "startlista1" ||
-      active === "startlista2"
-    ) {
-      const nrIndex = 1;
-      const nameIndex = 4;
-
-      if (!isCompetitorRow(row, nrIndex, nameIndex)) return;
-
-    } else {
-
-      // Eredmény 1. forduló
-      // Nr. = B oszlop, versenyző neve = E oszlop
-      // Kétfordulós összetett
-      // Nr. = C oszlop, versenyző neve = F oszlop
-
-      let nrIndex;
-      let nameIndex;
-
-      if (active === "eredmeny1") {
-        nrIndex = 1;
-        nameIndex = 4;
-      } else {
-        nrIndex = 2;
-        nameIndex = 5;
-      }
-
-      if (!isCompetitorRow(row, nrIndex, nameIndex)) return;
-    }
-
-    html += "<tr>";
-
-    selectedColumns.forEach(index => {
-      html += "<td>" + esc(row[index] ?? "") + "</td>";
-    });
-
-    html += "</tr>";
   });
 
   html += "</tbody></table></div>";
