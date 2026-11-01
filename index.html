@@ -364,10 +364,13 @@ function render() {
 
       // CSAK valódi versenyzői sor:
       // számszerű rajtszám és versenyzőnév szükséges
-      const nr = String(row[1] ?? "").trim();
+        const nr = String(row[1] ?? "").trim();
       const name = String(row[4] ?? "").trim();
 
-      if (!/^\d+$/.test(nr) || name === "") return;
+    // A 2. forduló nyomtatási időt tartalmazó sorának kihagyása
+    if (active === "startlista2" && nr.includes(":")) return;
+
+      if (nr === "" || name === "") return;
 
       html += "<tr>";
 
