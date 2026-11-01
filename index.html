@@ -287,31 +287,20 @@ function createCells(row, selectedColumns) {
 
     // EREDMÉNY 1. FORDULÓ
     if (active === "eredmeny1") {
-
-      // Helyezés
       if (index === 0) {
         value = row[8] ?? "";
       }
 
-      // Nr. a startlista1 alapján
       if (index === 1) {
         value = getStartNumber(row[2]);
       }
 
-      // Kocsi száma
       if (index === 2) {
         value = row[2] ?? "";
       }
     }
 
-    /*
-      KÉT FORDULÓ ÖSSZETETT EREDMÉNY
-
-      Itt nem módosítjuk a cellaértékeket.
-      Az összetett helyezés a row[1] mezőből jön.
-      A row[2] oszlop (első forduló Nr.) nem jelenik meg,
-      mert nincs benne a selectedColumns listában.
-    */
+    // ÖSSZETETT: a megfelelő oszlopokat közvetlenül jelenítjük meg
 
     const className =
       isLeftAlignedColumn(index) ? ' class="left"' : "";
@@ -324,10 +313,6 @@ function createCells(row, selectedColumns) {
 
   return html;
 }
-
-// =====================================================
-// TÁBLÁZAT MEGJELENÍTÉSE
-// =====================================================
 
 function render() {
   const rows = currentData[active] || [];
@@ -369,21 +354,15 @@ function render() {
 
   } else if (active === "osszetett") {
 
-    /*
-      KÉT FORDULÓ EREDMÉNY
+    // JAVÍTÁS:
+    // A 0. oszlop a korrigált helyezés.
+    // Az 1. oszlop ("Hely") nem kell.
+    // A 2. oszlop ("Nr.") az összetett helyezés.
 
-      row[1] = összetett helyezés (Nr.)
-      row[2] = első forduló Nr. (EZT ELHAGYJUK)
-      row[3] = kocsi száma
-
-      Ezért a row[2] indexet kihagyjuk.
-    */
-
-} else if (active === "osszetett") {
-  selectedColumns = [
-    2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
-  ];
-}
+    selectedColumns = [
+      2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
+    ];
+  }
 
   let html = '<div class="table-wrap"><table><thead><tr>';
 
@@ -391,7 +370,6 @@ function render() {
     if (headers[index] !== undefined) {
       let headerValue = headers[index];
 
-      // EREDMÉNY 1. FORDULÓ FEJLÉCEI
       if (active === "eredmeny1") {
         if (index === 0) headerValue = "Helyezés";
         if (index === 1) headerValue = "Nr.";
@@ -410,10 +388,7 @@ function render() {
 
   html += "</tr></thead><tbody>";
 
-  // =====================================================
   // STARTLISTÁK
-  // =====================================================
-
   if (
     active === "startlista1" ||
     active === "startlista2"
@@ -436,20 +411,14 @@ function render() {
     });
   }
 
-  // =====================================================
   // KÉT FORDULÓ ÖSSZETETT EREDMÉNY
-  // =====================================================
-
   else if (active === "osszetett") {
 
     function getDetail(row, label) {
       if (!Array.isArray(row)) return "";
 
-      const value7 =
-        String(row[7] ?? "").trim();
-
-      const value10 =
-        String(row[10] ?? "").trim();
+      const value7 = String(row[7] ?? "").trim();
+      const value10 = String(row[10] ?? "").trim();
 
       if (value7.includes(label)) return value7;
       if (value10.includes(label)) return value10;
@@ -464,14 +433,10 @@ function render() {
         String(value ?? "").trim().startsWith("#")
       )) return;
 
-      const categoryName =
-        String(row[1] ?? "").trim();
+      const categoryName = String(row[1] ?? "").trim();
+      const categoryText = String(row[2] ?? "").trim();
 
-      const categoryText =
-        String(row[2] ?? "").trim();
-
-      const pathLength =
-        getDetail(row, "Pályahossz:");
+      const pathLength = getDetail(row, "Pályahossz:");
 
       const isCategory =
         categoryName !== "" &&
@@ -479,11 +444,8 @@ function render() {
         pathLength !== "";
 
       if (isCategory) {
-        const speed =
-          getDetail(rows[rowIndex - 1], "Iram:");
-
-        const baseTime =
-          getDetail(rows[rowIndex + 1], "Alapidő:");
+        const speed = getDetail(rows[rowIndex - 1], "Iram:");
+        const baseTime = getDetail(rows[rowIndex + 1], "Alapidő:");
 
         const details = [
           speed,
@@ -504,11 +466,8 @@ function render() {
         String(row[2] ?? "").trim() === "Nr."
       ) return;
 
-      const nr =
-        String(row[2] ?? "").trim();
-
-      const name =
-        String(row[5] ?? "").trim();
+      const nr = String(row[2] ?? "").trim();
+      const name = String(row[5] ?? "").trim();
 
       if (!/^\d+$/.test(nr) || name === "") return;
 
@@ -518,12 +477,8 @@ function render() {
     });
   }
 
-  // =====================================================
   // EREDMÉNY 1. FORDULÓ
-  // =====================================================
-
   else if (active === "eredmeny1") {
-
     rows.forEach((row, rowIndex) => {
       if (!Array.isArray(row) || emptyRow(row)) return;
 
@@ -531,17 +486,10 @@ function render() {
         String(value ?? "").trim().startsWith("#")
       )) return;
 
-      const cell1 =
-        String(row[1] ?? "").trim();
-
-      const cell4 =
-        String(row[4] ?? "").trim();
-
-      const cell5 =
-        String(row[5] ?? "").trim();
-
-      const cell6 =
-        String(row[6] ?? "").trim();
+      const cell1 = String(row[1] ?? "").trim();
+      const cell4 = String(row[4] ?? "").trim();
+      const cell5 = String(row[5] ?? "").trim();
+      const cell6 = String(row[6] ?? "").trim();
 
       const isCategory =
         cell1 !== "" &&
@@ -571,11 +519,8 @@ function render() {
         String(row[4] ?? "").trim() === "Versenyző adatai"
       ) return;
 
-      const nr =
-        String(row[1] ?? "").trim();
-
-      const name =
-        String(row[4] ?? "").trim();
+      const nr = String(row[1] ?? "").trim();
+      const name = String(row[4] ?? "").trim();
 
       if (!/^\d+$/.test(nr) || name === "") return;
 
@@ -586,13 +531,8 @@ function render() {
   }
 
   html += "</tbody></table></div>";
-
   root.innerHTML = html;
 }
-
-// =====================================================
-// ADATOK FRISSÍTÉSE
-// =====================================================
 
 async function refresh() {
   try {
@@ -608,7 +548,6 @@ async function refresh() {
     const data = await response.json();
 
     currentData = data;
-
     render();
 
     document.getElementById("status").textContent =
