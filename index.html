@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="hu">
 <head>
@@ -107,11 +108,12 @@ th, td {
   white-space: nowrap;
 }
 
-tbody tr:nth-child(even) {
-  background: #f9fbfd;
+/* Versenyző neve és egyesülete */
+td.left {
+  text-align: left;
 }
 
-/* Kategóriasor */
+/* Kategóriafejléc */
 .category-row td {
   background: #dce7f3;
   color: #17365d;
@@ -220,6 +222,46 @@ function emptyRow(row) {
   );
 }
 
+// Meghatározza, mely oszlopok tartalmát igazítsuk balra.
+function isLeftAlignedColumn(index) {
+
+  if (
+    active === "startlista1" ||
+    active === "startlista2"
+  ) {
+    return index === 4 || index === 5;
+  }
+
+  if (active === "eredmeny1") {
+    return index === 4 || index === 5;
+  }
+
+  if (active === "osszetett") {
+    return index === 5 || index === 6;
+  }
+
+  return false;
+}
+
+// Cellák létrehozása a megfelelő igazítással.
+function createCells(row, selectedColumns) {
+
+  let html = "";
+
+  selectedColumns.forEach(index => {
+
+    const className =
+      isLeftAlignedColumn(index) ? ' class="left"' : "";
+
+    html +=
+      "<td" + className + ">" +
+      esc(row[index] ?? "") +
+      "</td>";
+  });
+
+  return html;
+}
+
 function render() {
   const rows = currentData[active] || [];
   const root = document.getElementById("results");
@@ -251,13 +293,19 @@ function render() {
 
   if (active === "startlista1") {
     selectedColumns = [1, 2, 3, 4, 5, 6];
+
   } else if (active === "startlista2") {
     selectedColumns = [1, 2, 3, 4, 5, 6];
+
   } else if (active === "eredmeny1") {
     selectedColumns = [0, 1, 2, 3, 4, 5, 6, 7];
+
   } else if (active === "osszetett") {
+
+    // A 15. oszlop (Hely) is megjelenik:
+    // összetett idő, hibapont és helyezés.
     selectedColumns = [
-      1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14
+      1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
     ];
   }
 
@@ -265,7 +313,13 @@ function render() {
 
   selectedColumns.forEach(index => {
     if (headers[index] !== undefined) {
-      html += "<th>" + esc(headers[index]) + "</th>";
+      const className =
+        isLeftAlignedColumn(index) ? ' class="left"' : "";
+
+      html +=
+        "<th" + className + ">" +
+        esc(headers[index]) +
+        "</th>";
     }
   });
 
@@ -288,27 +342,20 @@ function render() {
       const nr = String(row[1] ?? "").trim();
       const name = String(row[4] ?? "").trim();
 
-      // Csak valódi, egész sorszámú versenyző jelenjen meg
+      // Csak valódi, egész sorszámú versenyző jelenjen meg.
       if (!/^\d+$/.test(nr) || name === "") return;
 
       html += "<tr>";
-
-      selectedColumns.forEach(index => {
-        html += "<td>" + esc(row[index] ?? "") + "</td>";
-      });
-
+      html += createCells(row, selectedColumns);
       html += "</tr>";
     });
-
   }
 
   // KÉT FORDULÓ ÖSSZETETT EREDMÉNY
   else if (active === "osszetett") {
 
-    // Az adott sorból kinyeri a megadott adatot.
-    // A két forduló oszlopában az értékek azonosak,
-    // ezért elegendő az első nem üres érték.
     function getDetail(row, label) {
+
       if (!Array.isArray(row)) return "";
 
       const value7 = String(row[7] ?? "").trim();
@@ -341,10 +388,10 @@ function render() {
 
       if (isCategory) {
 
-        // Az előző sor tartalmazza az iramot.
+        // Előző sor: iram
         const speed = getDetail(rows[rowIndex - 1], "Iram:");
 
-        // A következő sor tartalmazza az alapidőt.
+        // Következő sor: alapidő
         const baseTime = getDetail(rows[rowIndex + 1], "Alapidő:");
 
         const details = [
@@ -367,28 +414,21 @@ function render() {
         String(row[2] ?? "").trim() === "Nr."
       ) return;
 
-      // Versenyzői sor felismerése
+      // Csak valódi versenyzői sor
       const nr = String(row[2] ?? "").trim();
       const name = String(row[5] ?? "").trim();
 
-      // Csak valódi, egész sorszámú versenyző jelenjen meg
       if (!/^\d+$/.test(nr) || name === "") return;
 
       html += "<tr>";
-
-      selectedColumns.forEach(index => {
-        html += "<td>" + esc(row[index] ?? "") + "</td>";
-      });
-
+      html += createCells(row, selectedColumns);
       html += "</tr>";
     });
-
   }
 
   // EREDMÉNY 1. FORDULÓ
   else if (active === "eredmeny1") {
 
-    // Kategóriafejlécek keresése a teljes tömbben
     rows.forEach((row, rowIndex) => {
 
       if (!Array.isArray(row) || emptyRow(row)) return;
@@ -425,7 +465,7 @@ function render() {
         return;
       }
 
-      // Táblázatfejléc és "Versenyző adatai" sor kihagyása
+      // Táblázatfejléc és „Versenyző adatai” sor kihagyása
       if (rowIndex === headerIndex) return;
 
       if (
@@ -437,15 +477,10 @@ function render() {
       const nr = String(row[1] ?? "").trim();
       const name = String(row[4] ?? "").trim();
 
-      // Nyomtatási, idő- és elválasztó sorok kizárása
       if (!/^\d+$/.test(nr) || name === "") return;
 
       html += "<tr>";
-
-      selectedColumns.forEach(index => {
-        html += "<td>" + esc(row[index] ?? "") + "</td>";
-      });
-
+      html += createCells(row, selectedColumns);
       html += "</tr>";
     });
   }
