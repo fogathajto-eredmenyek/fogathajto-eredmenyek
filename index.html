@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="hu">
 <head>
@@ -82,6 +83,7 @@ main {
 
 .table-wrap {
   overflow-x: auto;
+  position: relative;
 }
 
 table {
@@ -140,6 +142,74 @@ footer {
   color: #8993a2;
   font-size: 12px;
   padding: 20px;
+}
+
+/* KÉT FORDULÓ ÖSSZETETT EREDMÉNY */
+.table-wrap.combined-wrap table {
+  width: max-content;
+  min-width: 100%;
+  font-size: 12px;
+}
+
+.table-wrap.combined-wrap th,
+.table-wrap.combined-wrap td {
+  padding: 7px 6px;
+}
+
+/* Rögzített első oszlopok */
+.table-wrap.combined-wrap th:nth-child(1),
+.table-wrap.combined-wrap td:nth-child(1) {
+  position: sticky;
+  left: 0;
+  z-index: 4;
+  background: #eaf0f7;
+  min-width: 48px;
+}
+
+/* Kocsi száma */
+.table-wrap.combined-wrap th:nth-child(2),
+.table-wrap.combined-wrap td:nth-child(2) {
+  position: sticky;
+  left: 48px;
+  z-index: 4;
+  background: #eaf0f7;
+  min-width: 65px;
+}
+
+/* Versenyző neve */
+.table-wrap.combined-wrap th:nth-child(4),
+.table-wrap.combined-wrap td:nth-child(4) {
+  position: sticky;
+  left: 113px;
+  z-index: 4;
+  background: #eaf0f7;
+  min-width: 150px;
+  text-align: left;
+  box-shadow: 3px 0 5px #00000012;
+}
+
+/* Rögzített fejléc */
+.table-wrap.combined-wrap thead th {
+  z-index: 6;
+}
+
+/* Kategóriasorok */
+.table-wrap.combined-wrap .category-row td {
+  position: static !important;
+  background: #dce7f3 !important;
+  font-size: 14px;
+  padding: 9px;
+}
+
+@media (max-width: 600px) {
+  .table-wrap.combined-wrap table {
+    font-size: 11px;
+  }
+
+  .table-wrap.combined-wrap th,
+  .table-wrap.combined-wrap td {
+    padding: 6px 5px;
+  }
 }
 </style>
 </head>
@@ -221,7 +291,6 @@ function emptyRow(row) {
   );
 }
 
-// Név és egyesület balra igazítása
 function isLeftAlignedColumn(index) {
 
   if (
@@ -242,7 +311,6 @@ function isLeftAlignedColumn(index) {
   return false;
 }
 
-// Cellák létrehozása
 function createCells(row, selectedColumns) {
 
   let html = "";
@@ -307,14 +375,19 @@ function render() {
 
   } else if (active === "osszetett") {
 
-    // A kétfordulós eredmény első oszlopa az összetett Nr.
-    // A versenyzői sorokat a megfelelő oszlopok alapján kezeljük.
+    // Összetett eredmények oszlopai
     selectedColumns = [
       2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
     ];
   }
 
-  let html = '<div class="table-wrap"><table><thead><tr>';
+  // Az összetett lap külön CSS-osztályt kap
+  const combinedClass =
+    active === "osszetett" ? " combined-wrap" : "";
+
+  let html =
+    '<div class="table-wrap' + combinedClass +
+    '"><table><thead><tr>';
 
   selectedColumns.forEach(index => {
 
@@ -370,7 +443,6 @@ function render() {
         String(value ?? "").trim().startsWith("#")
       )) return;
 
-      // Kategóriafejléc felismerése
       const categoryName = String(row[1] ?? "").trim();
       const categoryText = String(row[2] ?? "").trim();
 
@@ -409,14 +481,13 @@ function render() {
         return;
       }
 
-      // Os oszlopfejlécek kihagyása
+      // Fejléc kihagyása
       if (
         String(row[1] ?? "").trim() === "Hely" &&
         String(row[2] ?? "").trim() === "Nr."
       ) return;
 
-      // Versenyzői sor:
-      // row[2] = Nr., row[5] = Versenyző neve
+      // Versenyzői sor ellenőrzése
       const nr = String(row[2] ?? "").trim();
       const name = String(row[5] ?? "").trim();
 
@@ -444,7 +515,6 @@ function render() {
       const cell5 = String(row[5] ?? "").trim();
       const cell6 = String(row[6] ?? "").trim();
 
-      // Kategóriafejléc
       const isCategory =
         cell1 !== "" &&
         cell4.includes("Iram:") &&
