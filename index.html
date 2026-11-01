@@ -295,14 +295,14 @@ function render() {
       if (!/^\d+$/.test(nr) || name === "") return;
       }
 
-      // KÉT FORDULÓ ÖSSZETETT EREDMÉNY
-    else if (active === "osszetett") {
+// KÉT FORDULÓ ÖSSZETETT EREDMÉNY
+else if (active === "osszetett") {
 
   const nr = String(row[2] ?? "").trim();
   const name = String(row[5] ?? "").trim();
 
-  // Csak valódi, egész sorszámú versenyző jelenjen meg
-  if (!/^\d+$/.test(nr) || name === "") return;
+  if (nr === "" || name === "") return;
+}
 }
       }
 
