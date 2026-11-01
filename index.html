@@ -379,10 +379,11 @@ function render() {
       Ezért a row[2] indexet kihagyjuk.
     */
 
-    selectedColumns = [
-      1, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
-    ];
-  }
+ else if (active === "osszetett") {
+  selectedColumns = [
+    2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
+  ];
+}
 
   let html = '<div class="table-wrap"><table><thead><tr>';
 
