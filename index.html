@@ -1,37 +1,314 @@
+
 <!DOCTYPE html>
 <html lang="hu">
 <head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Fogathajtó verseny – Élő eredmények</title>
+
 <style>
-:root{--navy:#17365d;--blue:#24558a;--bg:#f3f6fa;--line:#dce3eb;--text:#1d2939}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,Helvetica,sans-serif}
-header{background:linear-gradient(135deg,#17365d,#2e5c8e);color:#fff;padding:24px 16px;text-align:center}
-header h1{font-size:clamp(22px,4vw,32px);margin:0 0 7px}header p{margin:0;opacity:.9}
-main{max-width:1100px;margin:20px auto;padding:0 12px}.tabs{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin:16px 0}
-.tab{border:1px solid #c7d3e2;background:#fff;color:var(--navy);padding:11px 14px;border-radius:8px;font-weight:700;cursor:pointer}
-.tab.active{background:var(--navy);color:#fff;border-color:var(--navy)}.panel{background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;box-shadow:0 2px 8px #102b4810}
-.table-wrap{overflow-x:auto}table{border-collapse:collapse;width:100%;min-width:620px;font-size:14px}th{background:#eaf0f7;color:#17365d;text-align:center;font-weight:700;position:sticky;top:0}
-th,td{padding:10px 9px;border-bottom:1px solid var(--line);text-align:center}tbody tr:nth-child(even){background:#f9fbfd}tbody tr:first-child td{font-weight:600}
-#status{font-size:12px;color:#6b7788;text-align:center;padding:12px}.empty{text-align:center;padding:30px 15px;color:#6b7788}
-footer{text-align:center;color:#8993a2;font-size:12px;padding:20px}
-</style></head><body>
-<header><h1>🏆 Fogathajtó verseny</h1><p>Élő eredmények</p></header>
-<main><nav class="tabs" id="tabs" aria-label="Eredménylapok"></nav><section class="panel"><div id="results"><div class="empty">Az eredmények betöltése…</div></div><div id="status">Kapcsolódás…</div></section></main>
-<footer>Az eredmények a versenyiroda adatai alapján frissülnek.</footer>
+:root {
+  --navy: #17365d;
+  --blue: #24558a;
+  --bg: #f3f6fa;
+  --line: #dce3eb;
+  --text: #1d2939;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+header {
+  background: linear-gradient(135deg, #17365d, #2e5c8e);
+  color: #fff;
+  padding: 24px 16px;
+  text-align: center;
+}
+
+header h1 {
+  font-size: clamp(22px, 4vw, 32px);
+  margin: 0 0 7px;
+}
+
+header p {
+  margin: 0;
+  opacity: .9;
+}
+
+main {
+  max-width: 1100px;
+  margin: 20px auto;
+  padding: 0 12px;
+}
+
+.tabs {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin: 16px 0;
+}
+
+.tab {
+  border: 1px solid #c7d3e2;
+  background: #fff;
+  color: var(--navy);
+  padding: 11px 14px;
+  border-radius: 8px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.tab.active {
+  background: var(--navy);
+  color: #fff;
+  border-color: var(--navy);
+}
+
+.panel {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px #102b4810;
+}
+
+.table-wrap {
+  overflow-x: auto;
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+  min-width: 620px;
+  font-size: 14px;
+}
+
+th {
+  background: #eaf0f7;
+  color: #17365d;
+  text-align: center;
+  font-weight: 700;
+  position: sticky;
+  top: 0;
+}
+
+th, td {
+  padding: 10px 9px;
+  border-bottom: 1px solid var(--line);
+  text-align: center;
+  white-space: nowrap;
+}
+
+tbody tr:nth-child(even) {
+  background: #f9fbfd;
+}
+
+tbody tr:first-child td {
+  font-weight: 600;
+}
+
+#status {
+  font-size: 12px;
+  color: #6b7788;
+  text-align: center;
+  padding: 12px;
+}
+
+.empty {
+  text-align: center;
+  padding: 30px 15px;
+  color: #6b7788;
+}
+
+footer {
+  text-align: center;
+  color: #8993a2;
+  font-size: 12px;
+  padding: 20px;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <h1>🏆 Fogathajtó verseny</h1>
+  <p>Élő eredmények</p>
+</header>
+
+<main>
+  <nav class="tabs" id="tabs" aria-label="Eredménylapok"></nav>
+
+  <section class="panel">
+    <div id="results">
+      <div class="empty">Az eredmények betöltése…</div>
+    </div>
+    <div id="status">Kapcsolódás…</div>
+  </section>
+</main>
+
+<footer>
+  Az eredmények a versenyiroda adatai alapján frissülnek.
+</footer>
+
 <script>
-// A későbbi Excel–Google kapcsolat URL-jét ide illesztjük be.
-const DATA_URL = "IDE_KERUL_A_KAPCSOLODASI_URL";
-const sheets=["Eredmény 1. Ford.","Eredmény 2. Ford.","Két Ford. Eredmény","Végső nyomtatás"];
-let active=sheets[0];
-const tabs=document.getElementById('tabs');
-sheets.forEach(name=>{const b=document.createElement('button');b.className='tab'+(name===active?' active':'');b.textContent=name;b.onclick=()=>{active=name;document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x===b));render();};tabs.appendChild(b);});
-function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
-function render(data){const rows=(data&&data[active])||[];const root=document.getElementById('results');if(!rows.length){root.innerHTML='<div class="empty">Még nincsenek közzétett eredmények.</div>';return;}
-let html='<div class="table-wrap"><table><thead><tr>';rows[0].forEach(v=>html+='<th>'+esc(v)+'</th>');html+='</tr></thead><tbody>';
-rows.slice(1).forEach(row=>{if(row.every(v=>String(v??'').trim()===''))return;html+='<tr>';row.forEach(v=>html+='<td>'+esc(v)+'</td>');html+='</tr>';});html+='</tbody></table></div>';root.innerHTML=html;}
-async function refresh(){if(DATA_URL.startsWith('IDE_')){document.getElementById('status').textContent='A kapcsolat beállítása folyamatban.';return;}
-try{const r=await fetch(DATA_URL+'?t='+Date.now(),{cache:'no-store'});if(!r.ok)throw Error('HTTP '+r.status);const data=await r.json();render(data);document.getElementById('status').textContent='Utolsó frissítés: '+new Date().toLocaleTimeString('hu-HU');}
-catch(e){document.getElementById('status').textContent='A kapcsolat átmenetileg nem elérhető. Újrapróbálkozás…';}}
-refresh();setInterval(refresh,15000);
-</script></body></html>
+
+// Excel VBA által feltöltött GitHub JSON-fájl
+const DATA_URL =
+"https://raw.githubusercontent.com/fogathajto-eredmenyek/fogathajto-eredmenyek/main/eredmenyek.json";
+
+// Megjelenítendő munkalapok
+const sheets = [
+  { key: "startlista1", name: "Startlista 1. Ford." },
+  { key: "eredmeny1", name: "Eredmény 1. Ford." },
+  { key: "startlista2", name: "Startlista 2. Ford." },
+  { key: "osszetett", name: "Két Ford. Eredmény" }
+];
+
+let active = sheets[0].key;
+let currentData = {};
+
+const tabs = document.getElementById("tabs");
+
+// Fülek létrehozása
+sheets.forEach(sheet => {
+  const button = document.createElement("button");
+
+  button.className = "tab" +
+    (sheet.key === active ? " active" : "");
+
+  button.textContent = sheet.name;
+
+  button.onclick = () => {
+    active = sheet.key;
+
+    document.querySelectorAll(".tab").forEach(tab => {
+      tab.classList.toggle("active", tab === button);
+    });
+
+    render();
+  };
+
+  tabs.appendChild(button);
+});
+
+// HTML-biztonság
+function esc(value) {
+  return String(value ?? "").replace(/[&<>"']/g, character => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;"
+  }[character]));
+}
+
+// Táblázat megjelenítése
+function render() {
+
+  const rows = currentData[active] || [];
+  const root = document.getElementById("results");
+
+  if (!rows.length) {
+    root.innerHTML =
+      '<div class="empty">Még nincsenek közzétett eredmények.</div>';
+    return;
+  }
+
+  let headerIndex = 0;
+
+  // Startlistáknál a 12. sor a fejléc
+  if (active === "startlista1" ||
+      active === "startlista2") {
+    headerIndex = 11;
+  }
+
+  // Eredménytábláknál a 9. sor a fejléc
+  else {
+    headerIndex = 8;
+  }
+
+  // Ha a fejléc nem található, az első sor legyen a fejléc
+  if (!rows[headerIndex] ||
+      rows[headerIndex].every(v => String(v ?? "").trim() === "")) {
+    headerIndex = 0;
+  }
+
+  const headers = rows[headerIndex];
+
+  let html = '<div class="table-wrap"><table><thead><tr>';
+
+  headers.forEach(value => {
+    html += "<th>" + esc(value) + "</th>";
+  });
+
+  html += "</tr></thead><tbody>";
+
+  rows.slice(headerIndex + 1).forEach(row => {
+
+    if (row.every(value => String(value ?? "").trim() === "")) {
+      return;
+    }
+
+    html += "<tr>";
+
+    row.forEach(value => {
+      html += "<td>" + esc(value) + "</td>";
+    });
+
+    html += "</tr>";
+  });
+
+  html += "</tbody></table></div>";
+
+  root.innerHTML = html;
+}
+
+// GitHub JSON betöltése és frissítése
+async function refresh() {
+
+  try {
+
+    const response = await fetch(
+      DATA_URL + "?t=" + Date.now(),
+      { cache: "no-store" }
+    );
+
+    if (!response.ok) {
+      throw new Error("HTTP " + response.status);
+    }
+
+    const data = await response.json();
+
+    currentData = data;
+
+    render();
+
+    document.getElementById("status").textContent =
+      "Utolsó frissítés: " +
+      new Date().toLocaleTimeString("hu-HU");
+
+  } catch (error) {
+
+    document.getElementById("status").textContent =
+      "Kapcsolódási hiba. Újrapróbálkozás…";
+
+    console.error("Eredményfrissítési hiba:", error);
+  }
+}
+
+// Indítás és automatikus frissítés 15 másodpercenként
+refresh();
+setInterval(refresh, 15000);
+
+</script>
+
+</body>
+</html>
