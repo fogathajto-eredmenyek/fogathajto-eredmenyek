@@ -15,7 +15,9 @@
   --text: #1d2939;
 }
 
-* { box-sizing: border-box; }
+* {
+  box-sizing: border-box;
+}
 
 body {
   margin: 0;
@@ -140,14 +142,16 @@ footer {
 </header>
 
 <main>
-  <nav class="tabs" id="tabs" aria-label="Eredménylapok"></nav>
 
-  <section class="panel">
-    <div id="results">
-      <div class="empty">Az eredmények betöltése…</div>
-    </div>
-    <div id="status">Kapcsolódás…</div>
-  </section>
+<nav class="tabs" id="tabs" aria-label="Eredménylapok"></nav>
+
+<section class="panel">
+  <div id="results">
+    <div class="empty">Az eredmények betöltése…</div>
+  </div>
+  <div id="status">Kapcsolódás…</div>
+</section>
+
 </main>
 
 <footer>
@@ -195,7 +199,7 @@ sheets.forEach(sheet => {
   tabs.appendChild(button);
 });
 
-// HTML-biztonság
+// HTML biztonságos megjelenítése
 function esc(value) {
 
   return String(value ?? "").replace(/[&<>"']/g, character => ({
@@ -205,17 +209,23 @@ function esc(value) {
     '"': "&quot;",
     "'": "&#39;"
   }[character]));
+
 }
 
-// Üres sorok kiszűrése
+// Teljesen üres sor ellenőrzése
 function emptyRow(row) {
-  return row.every(value => String(value ?? "").trim() === "");
+
+  return row.every(value =>
+    String(value ?? "").trim() === ""
+  );
+
 }
 
 // Táblázat megjelenítése
 function render() {
 
   const rows = currentData[active] || [];
+
   const root = document.getElementById("results");
 
   if (!rows.length) {
@@ -228,67 +238,67 @@ function render() {
 
   let headerIndex;
 
-  // Startlisták fejléc: 12. sor
-  if (active === "startlista1" ||
-      active === "startlista2") {
+  // Startlisták fejlécének helye
+  if (
+    active === "startlista1" ||
+    active === "startlista2"
+  ) {
 
     headerIndex = 11;
 
   } else {
 
-    // Eredménylisták fejléc: 9. sor
+    // Eredménylapok fejlécének helye
     headerIndex = 8;
+
   }
 
-  // Ha az adott sor nem megfelelő, az első sorra váltunk
-  if (!rows[headerIndex] || emptyRow(rows[headerIndex])) {
+  if (
+    !rows[headerIndex] ||
+    emptyRow(rows[headerIndex])
+  ) {
+
     headerIndex = 0;
+
   }
 
   const headers = rows[headerIndex];
 
   let selectedColumns = [];
 
-  // STARTLISTA 1. FORDULÓ
-  // Nr. oszloptól Kategória oszlopig
+  // Startlista 1
   if (active === "startlista1") {
 
     selectedColumns = [1, 2, 3, 4, 5, 6];
 
   }
 
-  // STARTLISTA 2. FORDULÓ
-  // Nr. oszloptól Kategória oszlopig
+  // Startlista 2
   else if (active === "startlista2") {
 
     selectedColumns = [1, 2, 3, 4, 5, 6];
 
   }
 
-  // EREDMÉNY 1. FORDULÓ
-  // Hely, Nr., Kocsi száma, Ig. szám,
-  // Versenyző neve, Egyesülete, Idő, HP.
+  // Eredmény 1. forduló
   else if (active === "eredmeny1") {
 
     selectedColumns = [0, 1, 2, 3, 4, 5, 6, 7];
 
   }
 
-  // KÉTFORDULÓS ÖSSZETETT EREDMÉNY
-  // Helyezés, versenyzői adatok, fordulók
-  // és összesített idő / hibapont
+  // Két forduló összetett eredménye
   else if (active === "osszetett") {
 
     selectedColumns = [
-      1, 2, 3, 4, 5, 6,
-      7, 8, 9, 10, 11, 12, 13, 14
+      1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14
     ];
 
   }
 
   let html = '<div class="table-wrap"><table><thead><tr>';
 
-  // Csak a kijelölt fejlécoszlopok
+  // Fejléc
   selectedColumns.forEach(index => {
 
     if (headers[index] !== undefined) {
@@ -302,40 +312,48 @@ function render() {
   html += "</tr></thead><tbody>";
 
   // Adatsorok
-rows.slice(headerIndex + 1).forEach(row => {
+  rows.slice(headerIndex + 1).forEach(row => {
 
     // Üres sorok kihagyása
     if (emptyRow(row)) return;
 
-    // A rajtszám oszlopának meghatározása
+    // Startlistákon minden nem üres adat megmarad
+    if (
+      active === "startlista1" ||
+      active === "startlista2"
+    ) {
+
+      html += "<tr>";
+
+      selectedColumns.forEach(index => {
+
+        html += "<td>" + esc(row[index] ?? "") + "</td>";
+
+      });
+
+      html += "</tr>";
+
+      return;
+
+    }
+
+    // Eredménylapokon a technikai sorok kiszűrése
+    // Eredmény 1. forduló: B oszlop = Nr.
+    // Két forduló összetett: C oszlop = Nr.
+
     let nrIndex = 1;
 
     if (active === "osszetett") {
-        nrIndex = 2;
+
+      nrIndex = 2;
+
     }
 
-    // Csak olyan sor jelenjen meg, amelyben van rajtszám
-    const rajtszam = String(row[nrIndex] ?? "").trim();
+    const rajtszam =
+      String(row[nrIndex] ?? "").trim();
 
-    if (rajtszam === "" || !/^\d+$/.test(rajtszam)) return;
-
-    html += "<tr>";
-
-    selectedColumns.forEach(index => {
-        html += "<td>" + esc(row[index] ?? "") + "</td>";
-    });
-
-    html += "</tr>";
-});
-
-    html += "<tr>";
-
-    selectedColumns.forEach(index => {
-        html += "<td>" + esc(row[index] ?? "") + "</td>";
-    });
-
-    html += "</tr>";
-});
+    // Csak a rajtszámmal rendelkező sorokat jelenítjük meg
+    if (rajtszam === "") return;
 
     html += "<tr>";
 
@@ -352,9 +370,10 @@ rows.slice(headerIndex + 1).forEach(row => {
   html += "</tbody></table></div>";
 
   root.innerHTML = html;
+
 }
 
-// GitHub JSON betöltése
+// Adatok frissítése GitHub-ról
 async function refresh() {
 
   try {
@@ -365,7 +384,9 @@ async function refresh() {
     );
 
     if (!response.ok) {
+
       throw new Error("HTTP " + response.status);
+
     }
 
     const data = await response.json();
@@ -378,16 +399,23 @@ async function refresh() {
       "Utolsó frissítés: " +
       new Date().toLocaleTimeString("hu-HU");
 
-  } catch (error) {
+  }
+
+  catch (error) {
 
     document.getElementById("status").textContent =
       "Kapcsolódási hiba. Újrapróbálkozás…";
 
-    console.error("Eredményfrissítési hiba:", error);
+    console.error(
+      "Eredményfrissítési hiba:",
+      error
+    );
+
   }
+
 }
 
-// Indítás
+// Első betöltés
 refresh();
 
 // Automatikus frissítés 15 másodpercenként
