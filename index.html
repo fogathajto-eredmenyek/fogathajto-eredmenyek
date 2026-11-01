@@ -296,12 +296,14 @@ function render() {
       }
 
       // KÉT FORDULÓ ÖSSZETETT EREDMÉNY
-      else if (active === "osszetett") {
+    else if (active === "osszetett") {
 
-        const nr = String(row[2] ?? "").trim();
-        const name = String(row[5] ?? "").trim();
+  const nr = String(row[2] ?? "").trim();
+  const name = String(row[5] ?? "").trim();
 
-        if (nr === "" || name === "") return;
+  // Csak valódi, egész sorszámú versenyző jelenjen meg
+  if (!/^\d+$/.test(nr) || name === "") return;
+}
       }
 
       html += "<tr>";
