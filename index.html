@@ -4,7 +4,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Fogathajtó verseny – Élő eredmények</title>
+<title>Fülöpi Fogathajtó Verseny – Élő eredmények</title>
 
 <style>
 :root {
@@ -38,9 +38,26 @@ header h1 {
   margin: 0 0 7px;
 }
 
-header p {
-  margin: 0;
-  opacity: .9;
+header h2 {
+  font-size: clamp(18px, 3vw, 25px);
+  margin: 10px 0;
+  font-weight: 700;
+}
+
+header .event-info {
+  font-size: 14px;
+  margin: 8px 0;
+  opacity: .95;
+}
+
+header .live-status {
+  margin: 10px 0 0;
+  font-size: 14px;
+  opacity: .95;
+}
+
+header .unofficial {
+  font-weight: 700;
 }
 
 main {
@@ -217,6 +234,15 @@ footer {
 }
 
 @media (max-width: 600px) {
+  header {
+    padding: 20px 10px;
+  }
+
+  header .event-info,
+  header .live-status {
+    font-size: 12px;
+  }
+
   .table-wrap.combined-wrap table {
     font-size: 11px;
   }
@@ -241,7 +267,17 @@ footer {
 
 <header>
   <h1>🏆 Fogathajtó verseny</h1>
-  <p>Élő eredmények</p>
+
+  <h2>Fülöpi Fogathajtó Verseny</h2>
+
+  <div class="event-info">
+    📍 Fülöp &nbsp; | &nbsp; 📅 2026. 10. 28.
+  </div>
+
+  <p class="live-status">
+    Élő eredmények
+    <span class="unofficial">(Nem hivatalos eredmény)</span>
+  </p>
 </header>
 
 <main>
@@ -252,6 +288,7 @@ footer {
   <div id="results">
     <div class="empty">Az eredmények betöltése…</div>
   </div>
+
   <div id="status">Kapcsolódás…</div>
 </section>
 
@@ -354,16 +391,18 @@ function createCells(row, selectedColumns) {
 function createCombinedCategoryRow(categoryName, columnCount) {
   /*
     A kategória neve az első 5 megjelenített oszlopot foglalja el.
-    A fennmaradó területet három eredménycsoport között osztjuk el.
+    A fennmaradó oszlopok három eredménycsoport között oszlanak el.
   */
 
   const categoryColumns = Math.min(5, columnCount);
   const remaining = columnCount - categoryColumns;
 
   const firstRoundColumns = Math.ceil(remaining / 3);
+
   const secondRoundColumns = Math.ceil(
     (remaining - firstRoundColumns) / 2
   );
+
   const overallColumns =
     remaining - firstRoundColumns - secondRoundColumns;
 
