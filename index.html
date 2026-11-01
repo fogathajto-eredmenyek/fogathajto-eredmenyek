@@ -331,6 +331,15 @@ rows.slice(headerIndex + 1).forEach(row => {
     html += "<tr>";
 
     selectedColumns.forEach(index => {
+        html += "<td>" + esc(row[index] ?? "") + "</td>";
+    });
+
+    html += "</tr>";
+});
+
+    html += "<tr>";
+
+    selectedColumns.forEach(index => {
 
       html += "<td>" + esc(row[index] ?? "") + "</td>";
 
