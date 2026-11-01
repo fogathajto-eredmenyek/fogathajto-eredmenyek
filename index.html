@@ -86,7 +86,7 @@ main {
 table {
   border-collapse: collapse;
   width: 100%;
-  min-width: 620px;
+  min-width: 600px;
   font-size: 14px;
 }
 
@@ -108,10 +108,6 @@ th, td {
 
 tbody tr:nth-child(even) {
   background: #f9fbfd;
-}
-
-tbody tr:first-child td {
-  font-weight: 600;
 }
 
 #status {
@@ -160,11 +156,9 @@ footer {
 
 <script>
 
-// Excel VBA által feltöltött GitHub JSON-fájl
 const DATA_URL =
 "https://raw.githubusercontent.com/fogathajto-eredmenyek/fogathajto-eredmenyek/main/eredmenyek.json";
 
-// Megjelenítendő munkalapok
 const sheets = [
   { key: "startlista1", name: "Startlista 1. Ford." },
   { key: "eredmeny1", name: "Eredmény 1. Ford." },
@@ -179,14 +173,16 @@ const tabs = document.getElementById("tabs");
 
 // Fülek létrehozása
 sheets.forEach(sheet => {
+
   const button = document.createElement("button");
 
-  button.className = "tab" +
-    (sheet.key === active ? " active" : "");
+  button.className =
+    "tab" + (sheet.key === active ? " active" : "");
 
   button.textContent = sheet.name;
 
   button.onclick = () => {
+
     active = sheet.key;
 
     document.querySelectorAll(".tab").forEach(tab => {
@@ -201,6 +197,7 @@ sheets.forEach(sheet => {
 
 // HTML-biztonság
 function esc(value) {
+
   return String(value ?? "").replace(/[&<>"']/g, character => ({
     "&": "&amp;",
     "<": "&lt;",
@@ -210,6 +207,11 @@ function esc(value) {
   }[character]));
 }
 
+// Üres sorok kiszűrése
+function emptyRow(row) {
+  return row.every(value => String(value ?? "").trim() === "");
+}
+
 // Táblázat megjelenítése
 function render() {
 
@@ -217,53 +219,103 @@ function render() {
   const root = document.getElementById("results");
 
   if (!rows.length) {
+
     root.innerHTML =
       '<div class="empty">Még nincsenek közzétett eredmények.</div>';
+
     return;
   }
 
-  let headerIndex = 0;
+  let headerIndex;
 
-  // Startlistáknál a 12. sor a fejléc
+  // Startlisták fejléc: 12. sor
   if (active === "startlista1" ||
       active === "startlista2") {
-    headerIndex = 11;
-  }
 
-  // Eredménytábláknál a 9. sor a fejléc
-  else {
+    headerIndex = 11;
+
+  } else {
+
+    // Eredménylisták fejléc: 9. sor
     headerIndex = 8;
   }
 
-  // Ha a fejléc nem található, az első sor legyen a fejléc
-  if (!rows[headerIndex] ||
-      rows[headerIndex].every(v => String(v ?? "").trim() === "")) {
+  // Ha az adott sor nem megfelelő, az első sorra váltunk
+  if (!rows[headerIndex] || emptyRow(rows[headerIndex])) {
     headerIndex = 0;
   }
 
   const headers = rows[headerIndex];
 
+  let selectedColumns = [];
+
+  // STARTLISTA 1. FORDULÓ
+  // Nr. oszloptól Kategória oszlopig
+  if (active === "startlista1") {
+
+    selectedColumns = [1, 2, 3, 4, 5, 6];
+
+  }
+
+  // STARTLISTA 2. FORDULÓ
+  // Nr. oszloptól Kategória oszlopig
+  else if (active === "startlista2") {
+
+    selectedColumns = [1, 2, 3, 4, 5, 6];
+
+  }
+
+  // EREDMÉNY 1. FORDULÓ
+  // Hely, Nr., Kocsi száma, Ig. szám,
+  // Versenyző neve, Egyesülete, Idő, HP.
+  else if (active === "eredmeny1") {
+
+    selectedColumns = [0, 1, 2, 3, 4, 5, 6, 7];
+
+  }
+
+  // KÉTFORDULÓS ÖSSZETETT EREDMÉNY
+  // Helyezés, versenyzői adatok, fordulók
+  // és összesített idő / hibapont
+  else if (active === "osszetett") {
+
+    selectedColumns = [
+      1, 2, 3, 4, 5, 6,
+      7, 8, 9, 10, 11, 12, 13, 14
+    ];
+
+  }
+
   let html = '<div class="table-wrap"><table><thead><tr>';
 
-  headers.forEach(value => {
-    html += "<th>" + esc(value) + "</th>";
+  // Csak a kijelölt fejlécoszlopok
+  selectedColumns.forEach(index => {
+
+    if (headers[index] !== undefined) {
+
+      html += "<th>" + esc(headers[index]) + "</th>";
+
+    }
+
   });
 
   html += "</tr></thead><tbody>";
 
+  // Adatsorok
   rows.slice(headerIndex + 1).forEach(row => {
 
-    if (row.every(value => String(value ?? "").trim() === "")) {
-      return;
-    }
+    if (emptyRow(row)) return;
 
     html += "<tr>";
 
-    row.forEach(value => {
-      html += "<td>" + esc(value) + "</td>";
+    selectedColumns.forEach(index => {
+
+      html += "<td>" + esc(row[index] ?? "") + "</td>";
+
     });
 
     html += "</tr>";
+
   });
 
   html += "</tbody></table></div>";
@@ -271,7 +323,7 @@ function render() {
   root.innerHTML = html;
 }
 
-// GitHub JSON betöltése és frissítése
+// GitHub JSON betöltése
 async function refresh() {
 
   try {
@@ -304,8 +356,10 @@ async function refresh() {
   }
 }
 
-// Indítás és automatikus frissítés 15 másodpercenként
+// Indítás
 refresh();
+
+// Automatikus frissítés 15 másodpercenként
 setInterval(refresh, 15000);
 
 </script>
