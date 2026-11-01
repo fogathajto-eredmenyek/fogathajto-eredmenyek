@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="hu">
 <head>
@@ -238,6 +239,38 @@ function isLeftAlignedColumn(index) {
   return false;
 }
 
+/*
+  STARTLISTA NR. KERESÉSE
+
+  A startlista oszlopai:
+  row[1] = Nr.
+  row[2] = Kocsi száma
+
+  Az eredménylap kocsiszáma alapján megkeressük
+  a megfelelő sort a startlista1 lapon.
+*/
+function getStartNumber(carriageNumber) {
+  const startRows = currentData["startlista1"] || [];
+  const targetCarriage = String(carriageNumber ?? "").trim();
+
+  for (const row of startRows) {
+    if (!Array.isArray(row) || emptyRow(row)) continue;
+
+    // A startlista fejlécét és kategóriasorait kihagyjuk
+    const startNumber = String(row[1] ?? "").trim();
+    const startCarriage = String(row[2] ?? "").trim();
+
+    if (
+      startCarriage === targetCarriage &&
+      /^\d+$/.test(startNumber)
+    ) {
+      return startNumber;
+    }
+  }
+
+  return "";
+}
+
 // Táblázat celláinak létrehozása
 function createCells(row, selectedColumns) {
   let html = "";
@@ -248,18 +281,24 @@ function createCells(row, selectedColumns) {
     /*
       EREDMÉNY 1. FORDULÓ
 
-      A JSON eredménylap tényleges szerkezete alapján:
+      Megjelenített oszlopok:
       Helyezés     = row[8]
-      Nr.           = row[1]
+      Nr.           = startlista1 alapján keresve
       Kocsi száma   = row[2]
-
-      A többi oszlop változatlan marad.
     */
 
     if (active === "eredmeny1") {
-      if (index === 0) value = row[8] ?? "";
-      if (index === 1) value = row[1] ?? "";
-      if (index === 2) value = row[2] ?? "";
+      if (index === 0) {
+        value = row[8] ?? "";
+      }
+
+      if (index === 1) {
+        value = getStartNumber(row[2]);
+      }
+
+      if (index === 2) {
+        value = row[2] ?? "";
+      }
     }
 
     const className =
@@ -473,7 +512,6 @@ function render() {
         String(row[4] ?? "").trim() === "Versenyző adatai"
       ) return;
 
-      // A Nr. a row[1], a név a row[4] mezőben található.
       const nr = String(row[1] ?? "").trim();
       const name = String(row[4] ?? "").trim();
 
