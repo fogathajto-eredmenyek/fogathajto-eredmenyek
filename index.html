@@ -300,69 +300,25 @@ function render() {
       return;
     }
 
-
     // EREDMÉNY 1. FORDULÓ
     if (active === "eredmeny1") {
 
       const nr = String(row[1] ?? "").trim();
       const name = String(row[4] ?? "").trim();
 
-      // KATEGÓRIAFEJLÉC: kategória + iram + pályahossz + alapidő
-      const category = String(row[1] ?? "").trim();
-      const iram = String(row[4] ?? "").trim();
-      const palyahossz = String(row[5] ?? "").trim();
-      const alapido = String(row[6] ?? "").trim();
+      // Kategóriasor: csak a kategória neve van kitöltve
+      const categoryCell = String(row[9] ?? "").trim();
 
-      const isCategoryRow =
+      if (
+        categoryCell !== "" &&
         nr === "" &&
-        name === "" &&
-        category !== "" &&
-        (
-          iram.includes("Iram:") ||
-          palyahossz.includes("Pályahossz:") ||
-          alapido.includes("Alapidő:")
-        );
-
-      if (isCategoryRow) {
-
-        let categoryText = category;
-
-        const details = [
-          iram,
-          palyahossz,
-          alapido
-        ].filter(value => value !== "");
-
-        if (details.length > 0) {
-          categoryText += "  |  " + details.join("  |  ");
-        }
-
+        name === ""
+      ) {
         html += '<tr class="category-row">';
         html += '<td colspan="' + selectedColumns.length + '">';
-        html += esc(categoryText);
+        html += esc(categoryCell);
         html += "</td></tr>";
-
         return;
-      }
-
-      // Csak valódi versenyzői sor jelenjen meg
-      const isCompetitor =
-        /^\d+$/.test(nr) &&
-        name !== "";
-
-      if (!isCompetitor) return;
-
-      html += "<tr>";
-
-      selectedColumns.forEach(index => {
-        html += "<td>" + esc(row[index] ?? "") + "</td>";
-      });
-
-      html += "</tr>";
-
-      return;
-    }
-
       }
 
       // Technikai és üres sorok kizárása
