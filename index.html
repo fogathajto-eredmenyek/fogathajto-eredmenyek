@@ -198,21 +198,20 @@ footer {
   box-shadow: 3px 0 5px #00000012;
 }
 
-/* Kétszintű összetett fejléc */
-.table-wrap.combined-wrap thead th {
-  z-index: 6;
-}
-
-.table-wrap.combined-wrap thead tr:first-child th {
-  background: #dce7f3;
+/* Kategóriánként megjelenő csoportfejlécek */
+.table-wrap.combined-wrap .category-row th {
+  background: #dce7f3 !important;
   color: #17365d;
   font-weight: 700;
-  border-bottom: 1px solid #c7d3e2;
+  text-align: center;
+  position: static !important;
 }
 
-.table-wrap.combined-wrap thead tr:nth-child(2) th {
-  background: #eaf0f7;
+.table-wrap.combined-wrap .combined-subheader th {
+  background: #eaf0f7 !important;
+  color: #17365d;
   font-weight: 700;
+  position: static !important;
 }
 
 /* Kategóriasorok */
@@ -418,44 +417,11 @@ function render() {
     '<div class="table-wrap' + combinedClass +
     '"><table><thead>';
 
-  /* ÖSSZETETT EREDMÉNY: KÉTSZINTŰ FEJLÉC */
+  /* Az összetett eredménynél a fejléc minden kategóriasorba kerül */
   if (active === "osszetett") {
 
-    html += "<tr>";
-
-    /* Az első öt oszlop két fejlécsort fog át */
-    selectedColumns.slice(0, 5).forEach(index => {
-
-      const headerValue = headers[index] ?? "";
-
-      const className =
-        isLeftAlignedColumn(index) ? ' class="left"' : "";
-
-      html +=
-        '<th rowspan="2"' + className + ">" +
-        esc(headerValue) +
-        "</th>";
-    });
-
-    html += '<th colspan="3">I. forduló eredménye</th>';
-    html += '<th colspan="3">II. forduló eredménye</th>';
-    html += '<th colspan="3">Összetett eredmény</th>';
-
-    html += "</tr>";
-
-    html += "<tr>";
-
-    const subHeaders = [
-      "Idő", "Hibapont", "Hely",
-      "Idő", "Hibapont", "Hely",
-      "Idő", "Hibapont", "Hely"
-    ];
-
-    subHeaders.forEach(headerValue => {
-      html += "<th>" + esc(headerValue) + "</th>";
-    });
-
-    html += "</tr>";
+    // A táblázat tetején nincs külön, általános fejléc.
+    html += "</thead><tbody>";
 
   } else {
 
@@ -477,10 +443,8 @@ function render() {
       }
     });
 
-    html += "</tr>";
+    html += "</tr></thead><tbody>";
   }
-
-  html += "</thead><tbody>";
 
   // STARTLISTÁK
   if (
@@ -525,13 +489,43 @@ function render() {
         categoryName !== "" &&
         categoryText.includes("Kategória:");
 
-      // Kategóriasor: kizárólag a kategória neve jelenik meg
+      // A kategória neve és a három eredménycsoport egy sorban
       if (isCategory) {
 
         html += '<tr class="category-row">';
-        html += '<td colspan="' + selectedColumns.length + '">';
-        html += esc(categoryName);
-        html += "</td></tr>";
+
+        html +=
+          '<td colspan="5">' +
+          esc(categoryName) +
+          '</td>';
+
+        html +=
+          '<th colspan="3">I. forduló eredménye</th>';
+
+        html +=
+          '<th colspan="3">II. forduló eredménye</th>';
+
+        html +=
+          '<th colspan="3">Összetett eredmény</th>';
+
+        html += "</tr>";
+
+        // Az Idő – Hibapont – Hely részfejlécek
+        html += '<tr class="combined-subheader">';
+
+        html += '<td colspan="5"></td>';
+
+        const subHeaders = [
+          "Idő", "Hibapont", "Hely",
+          "Idő", "Hibapont", "Hely",
+          "Idő", "Hibapont", "Hely"
+        ];
+
+        subHeaders.forEach(label => {
+          html += "<th>" + esc(label) + "</th>";
+        });
+
+        html += "</tr>";
 
         return;
       }
@@ -585,10 +579,14 @@ function render() {
         ].filter(Boolean);
 
         html += '<tr class="category-row">';
-        html += '<td colspan="' + selectedColumns.length + '">';
+
+        html +=
+          '<td colspan="' + selectedColumns.length + '">';
+
         html += esc(
           cell1 + "  |  " + details.join("  |  ")
         );
+
         html += "</td></tr>";
 
         return;
