@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="hu">
 <head>
@@ -14,7 +15,9 @@
   --text: #1d2939;
 }
 
-* { box-sizing: border-box; }
+* {
+  box-sizing: border-box;
+}
 
 body {
   margin: 0;
@@ -35,7 +38,10 @@ header h1 {
   margin: 0 0 7px;
 }
 
-header p { margin: 0; opacity: .9; }
+header p {
+  margin: 0;
+  opacity: .9;
+}
 
 main {
   max-width: 1100px;
@@ -75,7 +81,9 @@ main {
   box-shadow: 0 2px 8px #102b4810;
 }
 
-.table-wrap { overflow-x: auto; }
+.table-wrap {
+  overflow-x: auto;
+}
 
 table {
   border-collapse: collapse;
@@ -100,8 +108,11 @@ th, td {
   white-space: nowrap;
 }
 
-tbody tr:nth-child(even) { background: #f9fbfd; }
+tbody tr:nth-child(even) {
+  background: #f9fbfd;
+}
 
+/* Kategóriasor */
 .category-row td {
   background: #dce7f3;
   color: #17365d;
@@ -186,7 +197,7 @@ sheets.forEach(sheet => {
 
     document.querySelectorAll(".tab").forEach(tab => {
       tab.classList.toggle("active", tab === button);
-    };
+    });
 
     render();
   };
@@ -277,20 +288,22 @@ function render() {
         active === "startlista1" ||
         active === "startlista2"
       ) {
-        const nr = String(row[1] ?? "").trim();
-        const name = String(row[4] ?? "").trim();
+      const nr = String(row[1] ?? "").trim();
+      const name = String(row[4] ?? "").trim();
 
-        // Csak valódi, egész sorszámú versenyző jelenjen meg
-        if (!/^\d+$/.test(nr) || name === "") return;
+      // Csak valódi, egész sorszámú versenyző jelenjen meg
+      if (!/^\d+$/.test(nr) || name === "") return;
       }
 
-      // KÉT FORDULÓ ÖSSZETETT EREDMÉNY
-      else if (active === "osszetett") {
+// KÉT FORDULÓ ÖSSZETETT EREDMÉNY
+else if (active === "osszetett") {
 
-        const nr = String(row[2] ?? "").trim();
-        const name = String(row[5] ?? "").trim();
+  const nr = String(row[2] ?? "").trim();
+  const name = String(row[5] ?? "").trim();
 
-        if (nr === "" || name === "") return;
+  if (nr === "" || name === "") return;
+}
+}
       }
 
       html += "<tr>";
@@ -305,6 +318,9 @@ function render() {
   } else {
 
     // EREDMÉNY 1. FORDULÓ
+    // A kategóriafejléceket a teljes tömbben keressük,
+    // így azok a táblázat fejlécét megelőző sorokból sem vesznek el.
+
     rows.forEach((row, rowIndex) => {
 
       if (!Array.isArray(row) || emptyRow(row)) return;
@@ -349,12 +365,12 @@ function render() {
         String(row[4] ?? "").trim() === "Versenyző adatai"
       ) return;
 
-      // CSAK valódi versenyzői sor:
-      // számszerű rajtszám és versenyzőnév szükséges
-      const nr = String(row[1] ?? "").trim();
-      const name = String(row[4] ?? "").trim();
+    // CSAK valódi versenyzői sor
+const nr = String(row[1] ?? "").trim();
+const name = String(row[4] ?? "").trim();
 
-      if (nr === "" || name === "") return;
+// Nyomtatási, idő- és elválasztó sorok kizárása
+if (!/^\d+$/.test(nr) || name === "") return;
 
       html += "<tr>";
 
