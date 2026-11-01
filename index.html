@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="hu">
 <head>
@@ -99,6 +98,7 @@ th {
   font-weight: 700;
   position: sticky;
   top: 0;
+  z-index: 2;
 }
 
 th, td {
@@ -108,8 +108,9 @@ th, td {
   white-space: nowrap;
 }
 
-/* Versenyző neve és egyesülete */
-td.left {
+/* Név és egyesület balra igazítása */
+td.left,
+th.left {
   text-align: left;
 }
 
@@ -222,7 +223,7 @@ function emptyRow(row) {
   );
 }
 
-// Meghatározza, mely oszlopok tartalmát igazítsuk balra.
+// Név, egyesület és kategória balra igazítása
 function isLeftAlignedColumn(index) {
 
   if (
@@ -233,7 +234,7 @@ function isLeftAlignedColumn(index) {
   }
 
   if (active === "eredmeny1") {
-    return index === 4 || index === 5;
+    return index === 5 || index === 6;
   }
 
   if (active === "osszetett") {
@@ -243,19 +244,38 @@ function isLeftAlignedColumn(index) {
   return false;
 }
 
-// Cellák létrehozása a megfelelő igazítással.
+// Cellák létrehozása
 function createCells(row, selectedColumns) {
 
   let html = "";
 
   selectedColumns.forEach(index => {
 
+    let value = row[index] ?? "";
+
+    /*
+      EREDMÉNY 1. FORDULÓ:
+      A forrás Nr. oszlopában lévő helyezés
+      a megjelenített Hely oszlopba kerül.
+      A Nr. oszlopba a rajtszám kerül.
+    */
+    if (active === "eredmeny1") {
+
+      if (index === 1) {
+        value = row[2] ?? "";
+      }
+
+      if (index === 2) {
+        value = row[1] ?? "";
+      }
+    }
+
     const className =
       isLeftAlignedColumn(index) ? ' class="left"' : "";
 
     html +=
       "<td" + className + ">" +
-      esc(row[index] ?? "") +
+      esc(value) +
       "</td>";
   });
 
@@ -301,9 +321,6 @@ function render() {
     selectedColumns = [0, 1, 2, 3, 4, 5, 6, 7];
 
   } else if (active === "osszetett") {
-
-    // A 15. oszlop (Hely) is megjelenik:
-    // összetett idő, hibapont és helyezés.
     selectedColumns = [
       1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
     ];
@@ -312,13 +329,19 @@ function render() {
   let html = '<div class="table-wrap"><table><thead><tr>';
 
   selectedColumns.forEach(index => {
+
     if (headers[index] !== undefined) {
+
+      let headerValue = headers[index];
+
+      // Az eredménylap Hely és Nr. fejlécei maradnak
+      // a megfelelő oszlopok fölött.
       const className =
         isLeftAlignedColumn(index) ? ' class="left"' : "";
 
       html +=
         "<th" + className + ">" +
-        esc(headers[index]) +
+        esc(headerValue) +
         "</th>";
     }
   });
@@ -342,7 +365,6 @@ function render() {
       const nr = String(row[1] ?? "").trim();
       const name = String(row[4] ?? "").trim();
 
-      // Csak valódi, egész sorszámú versenyző jelenjen meg.
       if (!/^\d+$/.test(nr) || name === "") return;
 
       html += "<tr>";
@@ -375,7 +397,7 @@ function render() {
         String(value ?? "").trim().startsWith("#")
       )) return;
 
-      // KATEGÓRIAFEJLÉC FELISMERÉSE
+      // KATEGÓRIAFEJLÉC
       const categoryName = String(row[1] ?? "").trim();
       const categoryText = String(row[2] ?? "").trim();
 
@@ -388,10 +410,7 @@ function render() {
 
       if (isCategory) {
 
-        // Előző sor: iram
         const speed = getDetail(rows[rowIndex - 1], "Iram:");
-
-        // Következő sor: alapidő
         const baseTime = getDetail(rows[rowIndex + 1], "Alapidő:");
 
         const details = [
@@ -465,7 +484,7 @@ function render() {
         return;
       }
 
-      // Táblázatfejléc és „Versenyző adatai” sor kihagyása
+      // Táblázatfejléc és "Versenyző adatai" sor kihagyása
       if (rowIndex === headerIndex) return;
 
       if (
@@ -473,7 +492,8 @@ function render() {
         String(row[4] ?? "").trim() === "Versenyző adatai"
       ) return;
 
-      // Csak valódi versenyzői sor
+      // A forrás Nr. oszlopában szereplő helyezés
+      // numerikus, ezért ezen alapul a versenyzői sor felismerése.
       const nr = String(row[1] ?? "").trim();
       const name = String(row[4] ?? "").trim();
 
