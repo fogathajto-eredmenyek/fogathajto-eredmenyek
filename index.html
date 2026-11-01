@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="hu">
 <head>
@@ -199,9 +198,21 @@ footer {
   box-shadow: 3px 0 5px #00000012;
 }
 
-/* Rögzített fejléc */
+/* Kétszintű összetett fejléc */
 .table-wrap.combined-wrap thead th {
   z-index: 6;
+}
+
+.table-wrap.combined-wrap thead tr:first-child th {
+  background: #dce7f3;
+  color: #17365d;
+  font-weight: 700;
+  border-bottom: 1px solid #c7d3e2;
+}
+
+.table-wrap.combined-wrap thead tr:nth-child(2) th {
+  background: #eaf0f7;
+  font-weight: 700;
 }
 
 /* Kategóriasorok */
@@ -332,9 +343,11 @@ function isLeftAlignedColumn(index) {
 }
 
 function createCells(row, selectedColumns) {
+
   let html = "";
 
   selectedColumns.forEach(index => {
+
     let value = row[index] ?? "";
 
     const className =
@@ -350,6 +363,7 @@ function createCells(row, selectedColumns) {
 }
 
 function render() {
+
   const rows = currentData[active] || [];
   const root = document.getElementById("results");
 
@@ -379,16 +393,19 @@ function render() {
   let selectedColumns = [];
 
   if (active === "startlista1") {
+
     selectedColumns = [1, 2, 3, 4, 5, 6];
 
   } else if (active === "startlista2") {
+
     selectedColumns = [1, 2, 3, 4, 5, 6];
 
   } else if (active === "eredmeny1") {
+
     selectedColumns = [0, 1, 2, 3, 4, 5, 6, 7];
 
   } else if (active === "osszetett") {
-    // Összetett eredmények megjelenítendő oszlopai
+
     selectedColumns = [
       2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
     ];
@@ -401,92 +418,60 @@ function render() {
     '<div class="table-wrap' + combinedClass +
     '"><table><thead>';
 
+  /* ÖSSZETETT EREDMÉNY: KÉTSZINTŰ FEJLÉC */
   if (active === "osszetett") {
-    // Kétszintű fejléc: eredménycsoportok, alattuk Idő / Hibapont / Hely
-    const subHeaders = selectedColumns.map(index =>
-      String(headers[index] ?? "").trim()
-    );
-
-    const normalize = value =>
-      value.toLocaleLowerCase("hu-HU").replace(/[\s.]/g, "");
-
-    const groupNames = [
-      "I. forduló eredménye",
-      "II. forduló eredménye",
-      "Összetett eredmény"
-    ];
-
-    let groupStarts = [];
-
-    for (let i = 0; i <= subHeaders.length - 3; i++) {
-      const a = normalize(subHeaders[i]);
-      const b = normalize(subHeaders[i + 1]);
-      const c = normalize(subHeaders[i + 2]);
-
-      if (
-        (a === "idő" || a === "ido") &&
-        b.includes("hibapont") &&
-        c === "hely"
-      ) {
-        groupStarts.push(i);
-        i += 2;
-      }
-    }
 
     html += "<tr>";
 
-    let columnIndex = 0;
-    let groupIndex = 0;
+    /* Az első öt oszlop két fejlécsort fog át */
+    selectedColumns.slice(0, 5).forEach(index => {
 
-    while (columnIndex < selectedColumns.length) {
-      if (groupStarts.includes(columnIndex)) {
-        html += '<th colspan="3">' +
-          esc(groupNames[groupIndex] || "Eredmény") +
-          "</th>";
+      const headerValue = headers[index] ?? "";
 
-        columnIndex += 3;
-        groupIndex++;
-      } else {
-        const headerValue = headers[selectedColumns[columnIndex]] ?? "";
+      const className =
+        isLeftAlignedColumn(index) ? ' class="left"' : "";
 
-        const className =
-          isLeftAlignedColumn(selectedColumns[columnIndex])
-            ? ' class="left"' : "";
+      html +=
+        '<th rowspan="2"' + className + ">" +
+        esc(headerValue) +
+        "</th>";
+    });
 
-        html += "<th rowspan=\"2\"" + className + ">" +
-          esc(headerValue) +
-          "</th>";
+    html += '<th colspan="3">I. forduló eredménye</th>';
+    html += '<th colspan="3">II. forduló eredménye</th>';
+    html += '<th colspan="3">Összetett eredmény</th>';
 
-        columnIndex++;
-      }
-    }
+    html += "</tr>";
 
-    html += "</tr><tr>";
+    html += "<tr>";
 
-    selectedColumns.forEach((index, i) => {
-      if (groupStarts.some(start => i >= start && i < start + 3)) {
-        const className =
-          isLeftAlignedColumn(index) ? ' class="left"' : "";
+    const subHeaders = [
+      "Idő", "Hibapont", "Hely",
+      "Idő", "Hibapont", "Hely",
+      "Idő", "Hibapont", "Hely"
+    ];
 
-        html += "<th" + className + ">" +
-          esc(headers[index] ?? "") +
-          "</th>";
-      }
+    subHeaders.forEach(headerValue => {
+      html += "<th>" + esc(headerValue) + "</th>";
     });
 
     html += "</tr>";
 
   } else {
+
     html += "<tr>";
 
     selectedColumns.forEach(index => {
+
       if (headers[index] !== undefined) {
+
         const headerValue = headers[index];
 
         const className =
           isLeftAlignedColumn(index) ? ' class="left"' : "";
 
-        html += "<th" + className + ">" +
+        html +=
+          "<th" + className + ">" +
           esc(headerValue) +
           "</th>";
       }
@@ -502,7 +487,9 @@ function render() {
     active === "startlista1" ||
     active === "startlista2"
   ) {
+
     rows.slice(headerIndex + 1).forEach(row => {
+
       if (!Array.isArray(row) || emptyRow(row)) return;
 
       if (row.some(value =>
@@ -522,7 +509,9 @@ function render() {
 
   // KÉT FORDULÓ ÖSSZETETT EREDMÉNY
   else if (active === "osszetett") {
+
     rows.forEach((row, rowIndex) => {
+
       if (!Array.isArray(row) || emptyRow(row)) return;
 
       if (row.some(value =>
@@ -536,12 +525,14 @@ function render() {
         categoryName !== "" &&
         categoryText.includes("Kategória:");
 
-      // Kategóriasor: csak a kategória megnevezése
+      // Kategóriasor: kizárólag a kategória neve jelenik meg
       if (isCategory) {
+
         html += '<tr class="category-row">';
         html += '<td colspan="' + selectedColumns.length + '">';
         html += esc(categoryName);
         html += "</td></tr>";
+
         return;
       }
 
@@ -565,7 +556,9 @@ function render() {
 
   // EREDMÉNY 1. FORDULÓ
   else if (active === "eredmeny1") {
+
     rows.forEach((row, rowIndex) => {
+
       if (!Array.isArray(row) || emptyRow(row)) return;
 
       if (row.some(value =>
@@ -584,6 +577,7 @@ function render() {
         cell6.includes("Alapidő:");
 
       if (isCategory) {
+
         const details = [
           cell4,
           cell5,
@@ -592,12 +586,11 @@ function render() {
 
         html += '<tr class="category-row">';
         html += '<td colspan="' + selectedColumns.length + '">';
-
         html += esc(
           cell1 + "  |  " + details.join("  |  ")
         );
-
         html += "</td></tr>";
+
         return;
       }
 
@@ -625,7 +618,9 @@ function render() {
 }
 
 async function refresh() {
+
   try {
+
     const response = await fetch(
       DATA_URL + "?t=" + Date.now(),
       { cache: "no-store" }
@@ -645,6 +640,7 @@ async function refresh() {
       new Date().toLocaleTimeString("hu-HU");
 
   } catch (error) {
+
     document.getElementById("status").textContent =
       "Kapcsolódási hiba. Újrapróbálkozás…";
 
