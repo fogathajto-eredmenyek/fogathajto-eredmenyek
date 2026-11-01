@@ -156,7 +156,7 @@ footer {
   padding: 7px 6px;
 }
 
-/* Rögzített első oszlopok */
+/* Rögzített első oszlop */
 .table-wrap.combined-wrap th:nth-child(1),
 .table-wrap.combined-wrap td:nth-child(1) {
   position: sticky;
@@ -166,7 +166,7 @@ footer {
   min-width: 48px;
 }
 
-/* Kocsi száma */
+/* Rögzített második oszlop */
 .table-wrap.combined-wrap th:nth-child(2),
 .table-wrap.combined-wrap td:nth-child(2) {
   position: sticky;
@@ -176,7 +176,7 @@ footer {
   min-width: 65px;
 }
 
-/* Versenyző neve */
+/* Rögzített versenyzőnév */
 .table-wrap.combined-wrap th:nth-child(4),
 .table-wrap.combined-wrap td:nth-child(4) {
   position: sticky;
@@ -375,13 +375,12 @@ function render() {
 
   } else if (active === "osszetett") {
 
-    // Összetett eredmények oszlopai
+    // Összetett eredmények megjelenítendő oszlopai
     selectedColumns = [
       2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
     ];
   }
 
-  // Az összetett lap külön CSS-osztályt kap
   const combinedClass =
     active === "osszetett" ? " combined-wrap" : "";
 
@@ -450,32 +449,12 @@ function render() {
         categoryName !== "" &&
         categoryText.includes("Kategória:");
 
+      // Kategóriasor: kizárólag a kategória neve jelenik meg
       if (isCategory) {
-
-        const previous = rows[rowIndex - 1] || [];
-        const next = rows[rowIndex + 1] || [];
-
-        const speed =
-          String(previous[7] ?? previous[10] ?? "").trim();
-
-        const pathLength =
-          String(row[7] ?? row[10] ?? "").trim();
-
-        const baseTime =
-          String(next[7] ?? next[10] ?? "").trim();
-
-        const details = [
-          speed,
-          pathLength,
-          baseTime
-        ].filter(Boolean);
 
         html += '<tr class="category-row">';
         html += '<td colspan="' + selectedColumns.length + '">';
-        html += esc(
-          categoryName +
-          (details.length ? "  |  " + details.join("  |  ") : "")
-        );
+        html += esc(categoryName);
         html += "</td></tr>";
 
         return;
