@@ -278,7 +278,95 @@ function render() {
 
   html += "</tr></thead><tbody>";
 
+   // Adatsorok feldolgozása
+  let currentCategory = "";
+
   rows.slice(headerIndex + 1).forEach(row => {
+
+    // Teljesen üres sor kihagyása
+    if (emptyRow(row)) return;
+
+    // Excel-hibák kihagyása
+    if (row.some(value =>
+      String(value ?? "").trim().startsWith("#")
+    )) return;
+
+    // STARTLISTÁK
+    if (
+      active === "startlista1" ||
+      active === "startlista2"
+    ) {
+
+      const nr = String(row[1] ?? "").trim();
+      const name = String(row[4] ?? "").trim();
+
+      if (nr === "" || name === "") return;
+
+      html += "<tr>";
+
+      selectedColumns.forEach(index => {
+        html += "<td>" + esc(row[index] ?? "") + "</td>";
+      });
+
+      html += "</tr>";
+
+      return;
+    }
+
+    // EREDMÉNY 1. FORDULÓ
+    if (active === "eredmeny1") {
+
+      const category = String(row[9] ?? "").trim();
+      const nr = String(row[1] ?? "").trim();
+      const name = String(row[4] ?? "").trim();
+
+      // Kategóriasor felismerése
+      if (category !== "" && nr === "" && name === "") {
+
+        currentCategory = category;
+
+        html += '<tr class="category-row">';
+        html += '<td colspan="' + selectedColumns.length + '">';
+        html += esc(category);
+        html += "</td></tr>";
+
+        return;
+      }
+
+      // Csak valódi versenyző
+      if (nr === "" || name === "") return;
+
+      html += "<tr>";
+
+      selectedColumns.forEach(index => {
+        html += "<td>" + esc(row[index] ?? "") + "</td>";
+      });
+
+      html += "</tr>";
+
+      return;
+    }
+
+    // KÉT FORDULÓ ÖSSZETETT EREDMÉNY
+    if (active === "osszetett") {
+
+      const nr = String(row[2] ?? "").trim();
+      const name = String(row[5] ?? "").trim();
+
+      // Üres sorok kihagyása
+      if (nr === "" || name === "") return;
+
+      html += "<tr>";
+
+      selectedColumns.forEach(index => {
+        html += "<td>" + esc(row[index] ?? "") + "</td>";
+      });
+
+      html += "</tr>";
+
+    }
+
+  });
 
     // Üres és hibás sorok kizárása
     if (emptyRow(row)) return;
