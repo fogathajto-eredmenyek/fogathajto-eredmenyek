@@ -159,7 +159,6 @@ footer {
 </footer>
 
 <script>
-
 const DATA_URL =
 "https://raw.githubusercontent.com/fogathajto-eredmenyek/fogathajto-eredmenyek/main/eredmenyek.json";
 
@@ -175,9 +174,7 @@ let currentData = {};
 
 const tabs = document.getElementById("tabs");
 
-// Fülek létrehozása
 sheets.forEach(sheet => {
-
   const button = document.createElement("button");
 
   button.className =
@@ -186,7 +183,6 @@ sheets.forEach(sheet => {
   button.textContent = sheet.name;
 
   button.onclick = () => {
-
     active = sheet.key;
 
     document.querySelectorAll(".tab").forEach(tab => {
@@ -199,9 +195,7 @@ sheets.forEach(sheet => {
   tabs.appendChild(button);
 });
 
-// HTML biztonságos megjelenítése
 function esc(value) {
-
   return String(value ?? "").replace(/[&<>"']/g, character => ({
     "&": "&amp;",
     "<": "&lt;",
@@ -209,218 +203,165 @@ function esc(value) {
     '"': "&quot;",
     "'": "&#39;"
   }[character]));
-
 }
 
-// Teljesen üres sor ellenőrzése
 function emptyRow(row) {
-
   return row.every(value =>
     String(value ?? "").trim() === ""
   );
-
 }
 
-// Táblázat megjelenítése
+// Megvizsgálja, hogy az adott sor valódi versenyzői adatot tartalmaz-e
+function isCompetitorRow(row, nrIndex, nameIndex) {
+  const nr = String(row[nrIndex] ?? "").trim();
+  const name = String(row[nameIndex] ?? "").trim();
+
+  if (nr === "" || name === "") return false;
+
+  // A rajtszámnak számot kell tartalmaznia
+  if (!/^\d+$/.test(nr)) return false;
+
+  // Excel-hibák kizárása
+  if (nr.includes("#") || name.includes("#")) return false;
+
+  return true;
+}
+
 function render() {
-
   const rows = currentData[active] || [];
-
   const root = document.getElementById("results");
 
   if (!rows.length) {
-
     root.innerHTML =
       '<div class="empty">Még nincsenek közzétett eredmények.</div>';
-
     return;
   }
 
   let headerIndex;
 
-  // Startlisták fejlécének helye
   if (
     active === "startlista1" ||
     active === "startlista2"
   ) {
-
     headerIndex = 11;
-
   } else {
-
-    // Eredménylapok fejlécének helye
     headerIndex = 8;
-
   }
 
-  if (
-    !rows[headerIndex] ||
-    emptyRow(rows[headerIndex])
-  ) {
-
+  if (!rows[headerIndex] || emptyRow(rows[headerIndex])) {
     headerIndex = 0;
-
   }
 
   const headers = rows[headerIndex];
 
   let selectedColumns = [];
 
-  // Startlista 1
   if (active === "startlista1") {
-
     selectedColumns = [1, 2, 3, 4, 5, 6];
-
-  }
-
-  // Startlista 2
-  else if (active === "startlista2") {
-
+  } else if (active === "startlista2") {
     selectedColumns = [1, 2, 3, 4, 5, 6];
-
-  }
-
-  // Eredmény 1. forduló
-  else if (active === "eredmeny1") {
-
+  } else if (active === "eredmeny1") {
     selectedColumns = [0, 1, 2, 3, 4, 5, 6, 7];
-
-  }
-
-  // Két forduló összetett eredménye
-  else if (active === "osszetett") {
-
+  } else if (active === "osszetett") {
     selectedColumns = [
       1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14
     ];
-
   }
 
   let html = '<div class="table-wrap"><table><thead><tr>';
 
-  // Fejléc
   selectedColumns.forEach(index => {
-
     if (headers[index] !== undefined) {
-
       html += "<th>" + esc(headers[index]) + "</th>";
-
     }
-
   });
 
   html += "</tr></thead><tbody>";
 
-  // Adatsorok
   rows.slice(headerIndex + 1).forEach(row => {
 
-    // Üres sorok kihagyása
+    // Üres és hibás sorok kizárása
     if (emptyRow(row)) return;
 
-    // Startlistákon minden nem üres adat megmarad
+    if (row.some(value =>
+      String(value ?? "").trim().startsWith("#")
+    )) return;
+
+    // Startlisták: versenyző neve és rajtszáma alapján szűrés
     if (
       active === "startlista1" ||
       active === "startlista2"
     ) {
+      const nrIndex = 1;
+      const nameIndex = 4;
 
-      html += "<tr>";
+      if (!isCompetitorRow(row, nrIndex, nameIndex)) return;
 
-      selectedColumns.forEach(index => {
+    } else {
 
-        html += "<td>" + esc(row[index] ?? "") + "</td>";
+      // Eredmény 1. forduló
+      // Nr. = B oszlop, versenyző neve = E oszlop
+      // Kétfordulós összetett
+      // Nr. = C oszlop, versenyző neve = F oszlop
 
-      });
+      let nrIndex;
+      let nameIndex;
 
-      html += "</tr>";
+      if (active === "eredmeny1") {
+        nrIndex = 1;
+        nameIndex = 4;
+      } else {
+        nrIndex = 2;
+        nameIndex = 5;
+      }
 
-      return;
-
+      if (!isCompetitorRow(row, nrIndex, nameIndex)) return;
     }
-
-    // Eredménylapokon a technikai sorok kiszűrése
-    // Eredmény 1. forduló: B oszlop = Nr.
-    // Két forduló összetett: C oszlop = Nr.
-
-    let nrIndex = 1;
-
-    if (active === "osszetett") {
-
-      nrIndex = 2;
-
-    }
-
-    const rajtszam =
-      String(row[nrIndex] ?? "").trim();
-
-    // Csak a rajtszámmal rendelkező sorokat jelenítjük meg
-    if (rajtszam === "") return;
 
     html += "<tr>";
 
     selectedColumns.forEach(index => {
-
       html += "<td>" + esc(row[index] ?? "") + "</td>";
-
     });
 
     html += "</tr>";
-
   });
 
   html += "</tbody></table></div>";
 
   root.innerHTML = html;
-
 }
 
-// Adatok frissítése GitHub-ról
 async function refresh() {
-
   try {
-
     const response = await fetch(
       DATA_URL + "?t=" + Date.now(),
       { cache: "no-store" }
     );
 
     if (!response.ok) {
-
       throw new Error("HTTP " + response.status);
-
     }
 
     const data = await response.json();
 
     currentData = data;
-
     render();
 
     document.getElementById("status").textContent =
       "Utolsó frissítés: " +
       new Date().toLocaleTimeString("hu-HU");
 
-  }
-
-  catch (error) {
-
+  } catch (error) {
     document.getElementById("status").textContent =
       "Kapcsolódási hiba. Újrapróbálkozás…";
 
-    console.error(
-      "Eredményfrissítési hiba:",
-      error
-    );
-
+    console.error("Eredményfrissítési hiba:", error);
   }
-
 }
 
-// Első betöltés
 refresh();
-
-// Automatikus frissítés 15 másodpercenként
 setInterval(refresh, 15000);
-
 </script>
 
 </body>
