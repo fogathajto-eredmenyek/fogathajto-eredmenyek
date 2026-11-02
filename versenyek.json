@@ -1,0 +1,13 @@
+
+{
+  "competitions": [
+    {
+      "id": "2026-10-28-fulop",
+      "name": "Fülöpi Fogathajtó Verseny",
+      "location": "Fülöp",
+      "date": "2026. 10. 28.",
+      "data": "versenyek/2026-10-28-fulop/eredmenyek.json",
+      "live": false
+    }
+  ]
+}
