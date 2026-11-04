@@ -1,4 +1,4 @@
-{
+﻿{
   "competitions": [
     {
       "id": "2026-11-03-sárrétudvari-fogathajtó-verseny",
@@ -16,5 +16,5 @@
       "data": "versenyek/2026-10-28-fulop/eredmenyek.json",
       "live": false
     }
-  ]
+  ,{"id":"2026-10-28-fulop","name":"Fülöpi Fogthajtó Verseny","location":"Fülöp","date":"2026.10.28","data":"versenyek/2026-10-28-fulop/eredmenyek.json","live":false}]
 }
