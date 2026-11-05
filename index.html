@@ -4,114 +4,150 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>🏆 Fülöpi Fogathajtó Verseny – Élő eredmények</title>
+<title>Fogathajtó Versenyek – Eredmények</title>
 
 <style>
 :root {
   --navy: #17365d;
   --blue: #24558a;
-  --bg: #f3f6fa;
+  --bg: #f4f6f8;
   --line: #dce3eb;
-  --text: #1d2939;
+  --text: #263238;
+  --gold: #d6a642;
 }
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+}
+
+/* FEJLÉC */
+
+header {
+  background: var(--navy);
+  color: #fff;
+  padding: 22px 16px 20px;
+  text-align: center;
+  border-bottom: 3px solid var(--gold);
+}
+
+#site-label {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: #dbe5f0;
+  margin: 0 0 8px;
+}
+
+header h1 {
+  font-size: clamp(22px, 3.5vw, 32px);
+  line-height: 1.2;
+  margin: 0 0 8px;
+  font-weight: 750;
+}
+
+header .event-info {
+  font-size: 14px;
+  margin: 8px 0;
+  color: #e5edf5;
+}
+
+header .live-status {
+  margin: 10px 0 0;
+  font-size: 13px;
+  color: #e5edf5;
+}
+
+header .unofficial {
+  font-weight: 700;
+}
+
+/* FŐ TARTALOM */
+
+main {
+  max-width: 1160px;
+  margin: 22px auto;
+  padding: 0 14px;
+}
+
+/* VERSENYARCHÍVUM */
 
 .archive-selector {
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   gap: 10px;
   flex-wrap: wrap;
-  margin: 18px 0 10px;
+  margin: 0 0 14px;
   color: var(--navy);
   font-weight: 700;
+  font-size: 14px;
 }
 
 .archive-selector select {
   max-width: 100%;
   padding: 10px 12px;
   border: 1px solid #c7d3e2;
-  border-radius: 8px;
-  background: white;
+  border-radius: 7px;
+  background: #fff;
   color: var(--navy);
   font: inherit;
+  font-weight: 500;
 }
 
-@media (max-width: 600px) {
-  .archive-selector { flex-direction: column; align-items: stretch; }
-  .archive-selector select { width: 100%; }
-}
-
-* { box-sizing: border-box; }
-
-body {
-  margin: 0;
-  background: var(--bg);
-  color: var(--text);
-  font-family: Arial, Helvetica, sans-serif;
-}
-
-header {
-  background: linear-gradient(135deg, #17365d, #2e5c8e);
-  color: #fff;
-  padding: 24px 16px;
-  text-align: center;
-}
-
-header h1 {
-  font-size: clamp(22px, 4vw, 32px);
-  margin: 0 0 7px;
-}
-
-header .event-info {
-  font-size: 14px;
-  margin: 8px 0;
-  opacity: .95;
-}
-
-header .live-status {
-  margin: 10px 0 0;
-  font-size: 14px;
-  opacity: .95;
-}
-
-header .unofficial { font-weight: 700; }
-
-main {
-  max-width: 1100px;
-  margin: 20px auto;
-  padding: 0 12px;
-}
+/* EREDMÉNYLAP-FÜLEK */
 
 .tabs {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
-  justify-content: center;
-  margin: 16px 0;
+  justify-content: flex-start;
+  margin: 12px 0 14px;
 }
 
 .tab {
-  border: 1px solid #c7d3e2;
+  border: 1px solid #cbd5e1;
   background: #fff;
   color: var(--navy);
-  padding: 11px 14px;
-  border-radius: 8px;
-  font-weight: 700;
+  padding: 10px 13px;
+  border-radius: 7px;
+  font-weight: 650;
   cursor: pointer;
+  transition: background .15s, border-color .15s;
+}
+
+.tab:hover {
+  background: #edf2f7;
+  border-color: #9aafc5;
 }
 
 .tab.active {
-  background: var(--navy);
+  background: var(--blue);
   color: #fff;
-  border-color: var(--navy);
+  border-color: var(--blue);
 }
+
+button:focus-visible,
+select:focus-visible {
+  outline: 3px solid var(--gold);
+  outline-offset: 2px;
+}
+
+/* EREDMÉNYTÁBLA */
 
 .panel {
   background: #fff;
   border: 1px solid var(--line);
   border-radius: 10px;
   overflow: hidden;
-  box-shadow: 0 2px 8px #102b4810;
+  box-shadow: 0 2px 8px #102b480d;
 }
 
 .table-wrap {
@@ -128,7 +164,7 @@ table {
 
 th {
   background: #eaf0f7;
-  color: #17365d;
+  color: var(--navy);
   text-align: center;
   font-weight: 700;
   position: sticky;
@@ -136,29 +172,45 @@ th {
   z-index: 2;
 }
 
-th, td {
+th,
+td {
   padding: 10px 9px;
   border-bottom: 1px solid var(--line);
   text-align: center;
   white-space: nowrap;
 }
 
-td.left { font-weight: bold; }
+tbody tr:not(.category-row):nth-child(even) td {
+  background: #fafbfd;
+}
+
+tbody tr:not(.category-row):hover td {
+  background: #f0f5fa;
+}
+
+td.left {
+  font-weight: 650;
+}
+
+/* KATEGÓRIAS */
 
 .category-row td {
   background: #dce7f3;
-  color: #17365d;
-  font-weight: bold;
+  color: var(--navy);
+  font-weight: 700;
   text-align: left;
-  font-size: 16px;
-  padding: 12px;
+  font-size: 15px;
+  padding: 11px 12px;
 }
+
+/* ÁLLAPOTJELZÉS */
 
 #status {
   font-size: 12px;
   color: #6b7788;
   text-align: center;
-  padding: 12px;
+  padding: 11px;
+  border-top: 1px solid #edf0f4;
 }
 
 .empty {
@@ -167,14 +219,17 @@ td.left { font-weight: bold; }
   color: #6b7788;
 }
 
+/* LÁBLÉC */
+
 footer {
   text-align: center;
   color: #8993a2;
   font-size: 12px;
-  padding: 20px;
+  padding: 22px 16px;
 }
 
 /* KÉT FORDULÓ ÖSSZETETT EREDMÉNY */
+
 .table-wrap.combined-wrap table {
   width: max-content;
   min-width: 100%;
@@ -186,7 +241,8 @@ footer {
   padding: 7px 6px;
 }
 
-/* Rögzített első oszlop */
+/* RÖGZÍTETT ELSŐ OSZLOP */
+
 .table-wrap.combined-wrap th:nth-child(1),
 .table-wrap.combined-wrap td:nth-child(1) {
   position: sticky;
@@ -196,7 +252,8 @@ footer {
   min-width: 48px;
 }
 
-/* Rögzített második oszlop */
+/* RÖGZÍTETT MÁSODIK OSZLOP */
+
 .table-wrap.combined-wrap th:nth-child(2),
 .table-wrap.combined-wrap td:nth-child(2) {
   position: sticky;
@@ -206,7 +263,8 @@ footer {
   min-width: 65px;
 }
 
-/* Rögzített versenyzőnév */
+/* RÖGZÍTETT VERSENYZŐNÉV */
+
 .table-wrap.combined-wrap th:nth-child(4),
 .table-wrap.combined-wrap td:nth-child(4) {
   position: sticky;
@@ -218,10 +276,17 @@ footer {
   box-shadow: 3px 0 5px #00000012;
 }
 
-/* Kategóriánként megjelenő csoportfejlécek */
+/* RÖGZÍTETT FEJLÉC */
+
+.table-wrap.combined-wrap thead th {
+  z-index: 6;
+}
+
+/* KATEGÓRIA- ÉS ALFEJLÉCEK */
+
 .table-wrap.combined-wrap .category-row th {
   background: #dce7f3 !important;
-  color: #17365d;
+  color: var(--navy);
   font-weight: 700;
   text-align: center;
   position: static !important;
@@ -229,12 +294,13 @@ footer {
 
 .table-wrap.combined-wrap .combined-subheader th {
   background: #eaf0f7 !important;
-  color: #17365d;
+  color: var(--navy);
   font-weight: 700;
   position: static !important;
 }
 
-/* Kategóriasorok */
+/* KATEGÓRIASOROK */
+
 .table-wrap.combined-wrap .category-row td {
   position: static !important;
   background: #dce7f3 !important;
@@ -242,8 +308,50 @@ footer {
   padding: 9px;
 }
 
+/* MOBILNÉZET */
+
 @media (max-width: 600px) {
-  .table-wrap.combined-wrap table { font-size: 11px; }
+
+  header {
+    padding: 19px 12px 17px;
+  }
+
+  main {
+    margin: 16px auto;
+    padding: 0 9px;
+  }
+
+  #site-label {
+    font-size: 10px;
+    letter-spacing: .09em;
+  }
+
+  .archive-selector {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .archive-selector select {
+    width: 100%;
+  }
+
+  .tabs {
+    gap: 6px;
+  }
+
+  .tab {
+    flex: 1 1 calc(50% - 6px);
+    padding: 10px 8px;
+    font-size: 12px;
+  }
+
+  table {
+    font-size: 13px;
+  }
+
+  .table-wrap.combined-wrap table {
+    font-size: 11px;
+  }
 
   .table-wrap.combined-wrap th,
   .table-wrap.combined-wrap td {
@@ -256,7 +364,14 @@ footer {
 <body>
 
 <header>
-  <h1 id="event-title">🏆 Fülöpi Fogathajtó Verseny</h1>
+
+  <div id="site-label">
+    Fogathajtó Versenyek – Élő eredmények
+  </div>
+
+  <h1 id="event-title">
+    Fülöpi Fogathajtó Verseny
+  </h1>
 
   <div class="event-info" id="event-info">
     📍 Fülöp &nbsp; | &nbsp; 📅 2026. 10. 28.
@@ -266,25 +381,37 @@ footer {
     Élő eredmények
     <span class="unofficial">(Nem hivatalos eredmény)</span>
   </p>
+
 </header>
 
 <main>
 
 <div class="archive-selector">
-  <label for="competition-select">Korábbi verseny:</label>
+
+  <label for="competition-select">
+    Korábbi verseny:
+  </label>
+
   <select id="competition-select">
     <option>Versenyek betöltése…</option>
   </select>
+
 </div>
 
 <nav class="tabs" id="tabs" aria-label="Eredménylapok"></nav>
 
 <section class="panel">
+
   <div id="results">
-    <div class="empty">Az eredmények betöltése…</div>
+    <div class="empty">
+      Az eredmények betöltése…
+    </div>
   </div>
 
-  <div id="status">Kapcsolódás…</div>
+  <div id="status">
+    Kapcsolódás…
+  </div>
+
 </section>
 
 </main>
@@ -324,14 +451,19 @@ const eventInfo = document.getElementById("event-info");
 const liveStatus = document.querySelector(".live-status");
 
 /* A fülek létrehozása */
+
 sheets.forEach(sheet => {
+
   const button = document.createElement("button");
 
   button.type = "button";
-  button.className = "tab" + (sheet.key === active ? " active" : "");
+  button.className =
+    "tab" + (sheet.key === active ? " active" : "");
+
   button.textContent = sheet.name;
 
   button.addEventListener("click", () => {
+
     active = sheet.key;
 
     document.querySelectorAll(".tab").forEach(tab => {
@@ -342,24 +474,38 @@ sheets.forEach(sheet => {
   });
 
   tabs.appendChild(button);
+
 });
 
+/* HTML-BIZTONSÁGOS SZÖVEGKEZELÉS */
+
 function esc(value) {
+
   return String(value ?? "").replace(/[&<>"']/g, character => ({
+
     "&": "&amp;",
     "<": "&lt;",
     ">": "&gt;",
     '"': "&quot;",
     "'": "&#39;"
+
   }[character]));
+
 }
+
+/* ÜRES SOR ELLENŐRZÉSE */
 
 function emptyRow(row) {
+
   return Array.isArray(row) &&
     row.every(value => String(value ?? "").trim() === "");
+
 }
 
+/* BALRA IGAZÍTOTT OSZLOPOK */
+
 function isLeftAlignedColumn(index) {
+
   if (active === "startlista1" || active === "startlista2") {
     return index === 4 || index === 5;
   }
@@ -369,28 +515,44 @@ function isLeftAlignedColumn(index) {
   }
 
   return false;
+
 }
 
+/* TÁBLÁZATCELLÁK LÉTREHOZÁSA */
+
 function createCells(row, selectedColumns) {
+
   let html = "";
 
   selectedColumns.forEach(index => {
+
     const value = row[index] ?? "";
-    const className = isLeftAlignedColumn(index) ? ' class="left"' : "";
+
+    const className = isLeftAlignedColumn(index)
+      ? ' class="left"'
+      : "";
 
     html += "<td" + className + ">" + esc(value) + "</td>";
+
   });
 
   return html;
+
 }
 
+/* EREDMÉNYEK MEGJELENÍTÉSE */
+
 function render() {
+
   const rows = currentData[active] || [];
 
   if (!Array.isArray(rows) || rows.length === 0) {
+
     resultsRoot.innerHTML =
       '<div class="empty">Még nincsenek közzétett eredmények.</div>';
+
     return;
+
   }
 
   let headerIndex;
@@ -406,46 +568,81 @@ function render() {
   }
 
   const headers = rows[headerIndex] || [];
+
   let selectedColumns = [];
 
   if (active === "startlista1") {
+
     selectedColumns = [1, 2, 3, 4, 5, 6];
+
   } else if (active === "startlista2") {
+
     selectedColumns = [1, 2, 3, 4, 5, 6];
+
   } else if (active === "eredmeny1") {
+
     selectedColumns = [0, 1, 2, 3, 4, 5, 6, 7];
+
   } else if (active === "osszetett") {
+
     selectedColumns = [
       2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
     ];
+
   }
 
-  const combinedClass = active === "osszetett" ? " combined-wrap" : "";
-  let html = '<div class="table-wrap' + combinedClass + '"><table><thead>';
+  const combinedClass =
+    active === "osszetett" ? " combined-wrap" : "";
 
-  /* Összetett eredmény: nincs külön általános fejléc */
+  let html =
+    '<div class="table-wrap' + combinedClass + '"><table><thead>';
+
+  /* ÖSSZETETT EREDMÉNY: NINCS KÜLÖN ÁLTALÁNOS FEJLÉC */
+
   if (active === "osszetett") {
+
     html += "</thead><tbody>";
+
   } else {
+
     html += "<tr>";
 
     selectedColumns.forEach(index => {
-      if (headers[index] !== undefined) {
-        const headerValue = headers[index];
-        const className = isLeftAlignedColumn(index) ? ' class="left"' : "";
 
-        html += "<th" + className + ">" + esc(headerValue) + "</th>";
+      if (headers[index] !== undefined) {
+
+        const headerValue = headers[index];
+
+        const className = isLeftAlignedColumn(index)
+          ? ' class="left"'
+          : "";
+
+        html +=
+          "<th" + className + ">" +
+          esc(headerValue) +
+          "</th>";
+
       }
+
     });
 
     html += "</tr></thead><tbody>";
+
   }
 
   /* STARTLISTÁK */
+
   if (active === "startlista1" || active === "startlista2") {
+
     rows.slice(headerIndex + 1).forEach(row => {
+
       if (!Array.isArray(row) || emptyRow(row)) return;
-      if (row.some(value => String(value ?? "").trim().startsWith("#"))) return;
+
+      if (
+        row.some(value =>
+          String(value ?? "").trim().startsWith("#")
+        )
+      ) return;
 
       const nr = String(row[1] ?? "").trim();
       const name = String(row[4] ?? "").trim();
@@ -455,31 +652,56 @@ function render() {
       html += "<tr>";
       html += createCells(row, selectedColumns);
       html += "</tr>";
+
     });
+
   }
 
   /* KÉT FORDULÓ ÖSSZETETT EREDMÉNY */
+
   else if (active === "osszetett") {
+
     rows.forEach(row => {
+
       if (!Array.isArray(row) || emptyRow(row)) return;
-      if (row.some(value => String(value ?? "").trim().startsWith("#"))) return;
+
+      if (
+        row.some(value =>
+          String(value ?? "").trim().startsWith("#")
+        )
+      ) return;
 
       const categoryName = String(row[1] ?? "").trim();
       const categoryText = String(row[2] ?? "").trim();
 
       const isCategory =
-        categoryName !== "" && categoryText.includes("Kategória:");
+        categoryName !== "" &&
+        categoryText.includes("Kategória:");
 
-      /* Kategória és fordulófejlécek */
+      /* KATEGÓRIA ÉS FORDULÓFEJLÉCEK */
+
       if (isCategory) {
+
         html += '<tr class="category-row">';
-        html += '<td colspan="5">' + esc(categoryName) + '</td>';
-        html += '<th colspan="3">I. forduló eredménye</th>';
-        html += '<th colspan="3">II. forduló eredménye</th>';
-        html += '<th colspan="3">Összetett eredmény</th>';
+
+        html +=
+          '<td colspan="5">' +
+          esc(categoryName) +
+          '</td>';
+
+        html +=
+          '<th colspan="3">I. forduló eredménye</th>';
+
+        html +=
+          '<th colspan="3">II. forduló eredménye</th>';
+
+        html +=
+          '<th colspan="3">Összetett eredmény</th>';
+
         html += "</tr>";
 
         html += '<tr class="combined-subheader">';
+
         html += '<td colspan="5"></td>';
 
         const subHeaders = [
@@ -493,16 +715,20 @@ function render() {
         });
 
         html += "</tr>";
+
         return;
+
       }
 
-      /* Ismétlődő oszlopfejléc kihagyása */
+      /* ISMÉTLŐDŐ OSZLOPFEJLÉC KIHAGYÁSA */
+
       if (
         String(row[1] ?? "").trim() === "Hely" &&
         String(row[2] ?? "").trim() === "Nr."
       ) return;
 
-      /* Versenyzői sor ellenőrzése */
+      /* VERSENYZŐI SOR ELLENŐRZÉSE */
+
       const nr = String(row[2] ?? "").trim();
       const name = String(row[5] ?? "").trim();
 
@@ -511,14 +737,24 @@ function render() {
       html += "<tr>";
       html += createCells(row, selectedColumns);
       html += "</tr>";
+
     });
+
   }
 
   /* EREDMÉNY 1. FORDULÓ */
+
   else if (active === "eredmeny1") {
+
     rows.forEach((row, rowIndex) => {
+
       if (!Array.isArray(row) || emptyRow(row)) return;
-      if (row.some(value => String(value ?? "").trim().startsWith("#"))) return;
+
+      if (
+        row.some(value =>
+          String(value ?? "").trim().startsWith("#")
+        )
+      ) return;
 
       const cell1 = String(row[1] ?? "").trim();
       const cell4 = String(row[4] ?? "").trim();
@@ -532,13 +768,21 @@ function render() {
         cell6.includes("Alapidő:");
 
       if (isCategory) {
+
         const details = [cell4, cell5, cell6].filter(Boolean);
 
         html += '<tr class="category-row">';
-        html += '<td colspan="' + selectedColumns.length + '">';
-        html += esc(cell1 + "  |  " + details.join("  |  "));
+
+        html +=
+          '<td colspan="' + selectedColumns.length + '">';
+
+        html +=
+          esc(cell1 + "  |  " + details.join("  |  "));
+
         html += "</td></tr>";
+
         return;
+
       }
 
       if (rowIndex === headerIndex) return;
@@ -556,26 +800,37 @@ function render() {
       html += "<tr>";
       html += createCells(row, selectedColumns);
       html += "</tr>";
+
     });
+
   }
 
   html += "</tbody></table></div>";
+
   resultsRoot.innerHTML = html;
+
 }
 
-/* A kiválasztott verseny adatainak betöltése */
+/* A KIVÁLASZTOTT VERSENY ADATAINAK BETÖLTÉSE */
+
 async function refresh() {
+
   if (!selectedCompetition) return;
 
   const thisRequest = ++requestVersion;
-  const dataUrl = new URL(selectedCompetition.data, REPO_URL).href;
+
+  const dataUrl =
+    new URL(selectedCompetition.data, REPO_URL).href;
 
   try {
+
     const response = await fetch(dataUrl + "?t=" + Date.now(), {
       cache: "no-store"
     });
 
-    if (!response.ok) throw new Error("HTTP " + response.status);
+    if (!response.ok) {
+      throw new Error("HTTP " + response.status);
+    }
 
     const data = await response.json();
 
@@ -586,51 +841,97 @@ async function refresh() {
     if (thisRequest !== requestVersion) return;
 
     currentData = data;
+
     render();
 
     statusRoot.textContent = selectedCompetition.live
-      ? "Utolsó frissítés: " + new Date().toLocaleTimeString("hu-HU")
+      ? "Utolsó frissítés: " +
+        new Date().toLocaleTimeString("hu-HU")
       : "Archivált eredmény – nem frissül automatikusan.";
+
   } catch (error) {
+
     if (thisRequest !== requestVersion) return;
 
-    statusRoot.textContent = "Kapcsolódási hiba. Újrapróbálkozás…";
+    statusRoot.textContent =
+      "Kapcsolódási hiba. Újrapróbálkozás…";
+
     console.error("Eredményfrissítési hiba:", error);
+
   }
+
 }
 
+/* VERSENY KIVÁLASZTÁSA – FEJLÉC FRISSÍTÉSE */
+
 function selectCompetition(competition) {
+
   selectedCompetition = competition;
+
   requestVersion++;
 
-  eventTitle.textContent = "🏆 " + competition.name;
+  /* A kiválasztott verseny neve */
+
+  eventTitle.textContent = competition.name;
+
+  /* Élő vagy archív felirat */
+
+  document.getElementById("site-label").textContent =
+    competition.live
+      ? "Fogathajtó Versenyek – Élő eredmények"
+      : "Fogathajtó Versenyek – Archív eredmények";
+
+  /* Helyszín és dátum */
+
   eventInfo.textContent =
     "📍 " + (competition.location || "") +
     "  |  📅 " + (competition.date || "");
+
+  /* Eredmény státusza */
 
   liveStatus.innerHTML = competition.live
     ? 'Élő eredmények <span class="unofficial">(Nem hivatalos eredmény)</span>'
     : 'Archivált eredmények <span class="unofficial">(Nem hivatalos eredmény)</span>';
 
+  /* Korábbi frissítő időzítő törlése */
+
   if (refreshTimer) {
+
     clearInterval(refreshTimer);
     refreshTimer = null;
+
   }
+
+  /* Adatok betöltése */
 
   refresh();
 
+  /* Élő verseny esetén 15 másodpercenkénti frissítés */
+
   if (competition.live) {
+
     refreshTimer = setInterval(refresh, 15000);
+
   }
+
 }
 
-async function loadCompetitions() {
-  try {
-    const response = await fetch(MANIFEST_URL + "?t=" + Date.now(), {
-      cache: "no-store"
-    });
+/* VERSENYARCHÍVUM BETÖLTÉSE */
 
-    if (!response.ok) throw new Error("HTTP " + response.status);
+async function loadCompetitions() {
+
+  try {
+
+    const response = await fetch(
+      MANIFEST_URL + "?t=" + Date.now(),
+      {
+        cache: "no-store"
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error("HTTP " + response.status);
+    }
 
     const manifest = await response.json();
 
@@ -639,45 +940,78 @@ async function loadCompetitions() {
     }
 
     competitions = manifest.competitions;
+
     competitionSelect.innerHTML = "";
 
+    /* Versenyek hozzáadása a legördülő listához */
+
     competitions.forEach(competition => {
+
       const option = document.createElement("option");
+
       option.value = competition.id;
+
       option.textContent =
         competition.name + " – " +
         (competition.location || "") +
         " (" + (competition.date || "") + ")";
+
       competitionSelect.appendChild(option);
+
     });
 
+    /* Archív verseny kiválasztása */
+
     competitionSelect.addEventListener("change", () => {
+
       const chosen = competitions.find(item =>
         item.id === competitionSelect.value
       );
 
-      if (chosen) selectCompetition(chosen);
+      if (chosen) {
+        selectCompetition(chosen);
+      }
+
     });
 
+    /* Legfrissebb verseny automatikus kiválasztása */
+
     if (competitions.length) {
+
       const newest = competitions[0];
+
       competitionSelect.value = newest.id;
+
       selectCompetition(newest);
+
     } else {
+
       resultsRoot.innerHTML =
         '<div class="empty">Még nincs archivált verseny.</div>';
-      statusRoot.textContent = "Nincs megjeleníthető verseny.";
+
+      statusRoot.textContent =
+        "Nincs megjeleníthető verseny.";
+
     }
+
   } catch (error) {
+
     competitionSelect.innerHTML =
       '<option>Az archívum nem tölthető be</option>';
-    statusRoot.textContent = "A versenyarchívum betöltése sikertelen.";
+
+    statusRoot.textContent =
+      "A versenyarchívum betöltése sikertelen.";
+
     console.error("Archívum betöltési hiba:", error);
+
   }
+
 }
 
-/* Indítás */
+/* INDÍTÁS */
+
 loadCompetitions();
+
 </script>
 
 </body>
