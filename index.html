@@ -238,11 +238,19 @@ footer {
   font-size: 12px;
 }
 
-.table-wrap.combined-wrap th,
-.table-wrap.combined-wrap td {
-  padding: 7px 6px;
+/* Helyezésoszlopok szélességének optimalizálása */
+.table-wrap.combined-wrap th:nth-child(8),
+.table-wrap.combined-wrap td:nth-child(8),
+.table-wrap.combined-wrap th:nth-child(11),
+.table-wrap.combined-wrap td:nth-child(11),
+.table-wrap.combined-wrap th:nth-child(14),
+.table-wrap.combined-wrap td:nth-child(14) {
+  width: 45px;
+  min-width: 45px;
+  max-width: 45px;
+  padding-left: 3px;
+  padding-right: 3px;
 }
-
 /* RÖGZÍTETT ELSŐ OSZLOP */
 
 .table-wrap.combined-wrap th:nth-child(1),
