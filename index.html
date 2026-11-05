@@ -508,17 +508,23 @@ function emptyRow(row) {
 /* BALRA IGAZÍTOTT OSZLOPOK */
 
 function isLeftAlignedColumn(index) {
-
+  // Startlisták: versenyző neve és egyesülete
   if (active === "startlista1" || active === "startlista2") {
     return index === 4 || index === 5;
   }
 
+  // I. forduló eredménye: versenyző neve és egyesülete
   if (active === "eredmeny1") {
     return index === 4 || index === 5 || index === 6;
   }
 
-  return false;
+  // Kétfordulós összetett eredmény:
+  // a versenyző neve balra igazítva
+  if (active === "osszetett") {
+    return index === 5;
+  }
 
+  return false;
 }
 
 /* TÁBLÁZATCELLÁK LÉTREHOZÁSA */
