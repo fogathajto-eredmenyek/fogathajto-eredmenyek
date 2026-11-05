@@ -1,29 +1,32 @@
-﻿{
+
+{
   "competitions": [
     {
-      "id": "2026-11-03-s\u00E1rr\u00E9tudvari-fogathajt\u00F3-verseny",
-      "name": "S\u00E1rr\u00E9tudvari Fogathajt\u00F3 Verseny",
-      "location": "S\u00E1rr\u00E9tudvari",
+      "id": "2026-11-03-sárrétudvari-fogathajtó-verseny",
+      "name": "Sárrétudvari Fogathajtó Verseny",
+      "location": "Sárrétudvari",
       "date": "2026. 11. 03.",
-      "data": "versenyek/2026-11-03-s\u00E1rr\u00E9tudvari-fogathajt\u00F3-verseny/eredmenyek.json",
-      "live": false
+      "data": "versenyek/2026-11-03-sárrétudvari-fogathajtó-verseny/eredmenyek.json",
+      "live": true,
+      "feltoltve": "2026-11-05 10:00:00"
     },
     {
       "id": "2026-10-28-fulop",
-      "name": "F\u00FCl\u00F6pi Fogthajt\u00F3 Verseny",
-      "location": "F\u00FCl\u00F6p",
+      "name": "Fülöpi Fogathajtó Verseny",
+      "location": "Fülöp",
       "date": "2026-10-28",
       "data": "versenyek/2026-10-28-fulop/eredmenyek.json",
-      "live": false
+      "live": false,
+      "feltoltve": "2026-10-28 10:00:00"
     },
     {
       "id": "2026-07-13-pocsaj",
-      "name": "Pocsaji Gogathajt\u00F3 Verseny",
+      "name": "Pocsaji Fogathajtó Verseny",
       "location": "Pocsaj",
       "date": "2026-07-13",
       "data": "versenyek/2026-07-13-pocsaj/eredmenyek.json",
-      "live": true
-      "feltoltve": "2026-11-05 10:00:00"
+      "live": false,
+      "feltoltve": "2026-07-13 10:00:00"
     }
   ]
 }
