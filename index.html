@@ -522,9 +522,9 @@ function isLeftAlignedColumn(index) {
 
   // Kétfordulós összetett eredmény:
   // a versenyző neve balra igazítva
-  if (active === "osszetett") {
-    return index === 5;
-  }
+ if (active === "osszetett") {
+  return index === 5 || index === 6;
+}
 
   return false;
 }
