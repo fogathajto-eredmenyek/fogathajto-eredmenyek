@@ -15,6 +15,14 @@
       "date": "2026-10-28",
       "data": "versenyek/2026-10-28-fulop/eredmenyek.json",
       "live": false
+    },
+    {
+      "id": "2026-07-13-pocsaj",
+      "name": "Pocsaji Gogathajt\u00F3 Verseny",
+      "location": "Pocsaj",
+      "date": "2026-07-13",
+      "data": "versenyek/2026-07-13-pocsaj/eredmenyek.json",
+      "live": false
     }
   ]
 }
