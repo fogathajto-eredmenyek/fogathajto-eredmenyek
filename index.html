@@ -323,7 +323,7 @@ footer {
 
   #site-label {
     font-size: 10px;
-    letterletter-spacing: .09em;
+    letter-spacing: .09em;
   }
 
   .archive-selector {
@@ -816,10 +816,13 @@ function render() {
 
 /* VERSENY ÉLŐ / ARCHÍV ÁLLAPOTÁNAK ELLENŐRZÉSE
    Az első feltöltés időpontja (feltoltve) alapján. */
+
 function isCompetitionLive(competition) {
+
   if (!competition || competition.live !== true) return false;
 
   const uploadedAt = competition.feltoltve;
+
   if (!uploadedAt) return false;
 
   // A "2026-11-05 14:52:35" formátumot is kezeli.
@@ -829,9 +832,11 @@ function isCompetitionLive(competition) {
   if (!Number.isFinite(uploadedTimestamp)) return false;
 
   return Date.now() - uploadedTimestamp < LIVE_DURATION;
+
 }
 
 function updateCompetitionStatus(competition) {
+
   const isLive = isCompetitionLive(competition);
 
   document.getElementById("site-label").textContent = isLive
@@ -843,6 +848,7 @@ function updateCompetitionStatus(competition) {
     : 'Archivált eredmények <span class="unofficial">(Nem hivatalos eredmény)</span>';
 
   return isLive;
+
 }
 
 /* A KIVÁLASZTOTT VERSENY ADATAINAK BETÖLTÉSE */
