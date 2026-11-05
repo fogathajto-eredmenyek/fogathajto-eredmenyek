@@ -985,6 +985,18 @@ async function loadCompetitions() {
 
     competitions = manifest.competitions;
 
+// Az élő verseny kerüljön legfelülre.
+// Az archivált versenyek dátum szerint csökkenő sorrendben következzenek.
+competitions.sort((a, b) => {
+  const aLive = isCompetitionLive(a);
+  const bLive = isCompetitionLive(b);
+
+  if (aLive && !bLive) return -1;
+  if (!aLive && bLive) return 1;
+
+  return new Date(b.date) - new Date(a.date);
+});
+
     competitionSelect.innerHTML = "";
 
     /* Versenyek hozzáadása a legördülő listához */
