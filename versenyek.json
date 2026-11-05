@@ -7,8 +7,7 @@
       "location": "Sárrétudvari",
       "date": "2026. 11. 03.",
       "data": "versenyek/2026-11-03-sárrétudvari-fogathajtó-verseny/eredmenyek.json",
-      "live": true,
-      "feltoltve": "2026-11-05 10:00:00"
+      "live": false
     },
     {
       "id": "2026-10-28-fulop",
@@ -16,8 +15,7 @@
       "location": "Fülöp",
       "date": "2026-10-28",
       "data": "versenyek/2026-10-28-fulop/eredmenyek.json",
-      "live": false,
-      "feltoltve": "2026-10-28 10:00:00"
+      "live": false
     },
     {
       "id": "2026-07-13-pocsaj",
@@ -25,8 +23,8 @@
       "location": "Pocsaj",
       "date": "2026-07-13",
       "data": "versenyek/2026-07-13-pocsaj/eredmenyek.json",
-      "live": false,
-      "feltoltve": "2026-07-13 10:00:00",
+      "live": true,
+      "feltoltve": "2026-11-05 10:00:00"
     }
   ]
 }
