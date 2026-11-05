@@ -189,6 +189,7 @@ tbody tr:not(.category-row):hover td {
 }
 
 /* Versenyző neve és egyesülete balra igazítva */
+
 td.left {
   font-weight: 650;
   text-align: left !important;
@@ -238,19 +239,6 @@ footer {
   font-size: 12px;
 }
 
-/* Helyezésoszlopok szélességének optimalizálása */
-.table-wrap.combined-wrap th:nth-child(7),
-.table-wrap.combined-wrap td:nth-child(7),
-.table-wrap.combined-wrap th:nth-child(10),
-.table-wrap.combined-wrap td:nth-child(10),
-.table-wrap.combined-wrap th:nth-child(13),
-.table-wrap.combined-wrap td:nth-child(13) {
-  width: 45px !important;
-  min-width: 45px !important;
-  max-width: 45px !important;
-  padding-left: 3px !important;
-  padding-right: 3px !important;
-}
 /* RÖGZÍTETT ELSŐ OSZLOP */
 
 .table-wrap.combined-wrap th:nth-child(1),
@@ -529,10 +517,10 @@ function isLeftAlignedColumn(index) {
   }
 
   // Kétfordulós összetett eredmény:
-  // a versenyző neve balra igazítva
- if (active === "osszetett") {
-  return index === 5 || index === 6;
-}
+  // a versenyző neve és egyesülete balra igazítva
+  if (active === "osszetett") {
+    return index === 5 || index === 6;
+  }
 
   return false;
 }
@@ -571,7 +559,6 @@ function render() {
       '<div class="empty">Még nincsenek közzétett eredmények.</div>';
 
     return;
-
   }
 
   let headerIndex;
@@ -614,7 +601,29 @@ function render() {
     active === "osszetett" ? " combined-wrap" : "";
 
   let html =
-    '<div class="table-wrap' + combinedClass + '"><table><thead>';
+    '<div class="table-wrap' + combinedClass + '"><table>';
+
+  /* Az összetett táblázat oszlopszélességeit közvetlenül a colgroup szabályozza. */
+
+  if (active === "osszetett") {
+
+    html += '<colgroup>';
+
+    for (let i = 1; i <= selectedColumns.length; i++) {
+
+      if (i === 9 || i === 12 || i === 15) {
+        html += '<col style="width:45px">';
+      } else {
+        html += '<col>';
+      }
+
+    }
+
+    html += '</colgroup>';
+
+  }
+
+  html += '<thead>';
 
   /* ÖSSZETETT EREDMÉNY: NINCS KÜLÖN ÁLTALÁNOS FEJLÉC */
 
@@ -840,17 +849,20 @@ function isCompetitionLive(competition) {
   // A 48 órát az első feltöltés (feltoltve) időpontjától számítjuk.
   // A live mező értékét nem vesszük figyelembe: az állapot automatikusan,
   // az idő leteltével archívvá válik.
+
   const uploadedAt = competition.feltoltve;
 
   if (!uploadedAt) return false;
 
   // Kezeli például a "2026-11-05 14:52:35" és az ISO formátumot is.
+
   const normalizedDate = String(uploadedAt).trim().replace(" ", "T");
   const uploadedTimestamp = new Date(normalizedDate).getTime();
 
   if (!Number.isFinite(uploadedTimestamp)) return false;
 
   // Jövőbeli időpont ne számítson élő versenynek.
+
   const elapsed = Date.now() - uploadedTimestamp;
 
   return elapsed >= 0 && elapsed < LIVE_DURATION;
@@ -913,6 +925,7 @@ async function refresh() {
       : "Archivált eredmény – nem frissül automatikusan.";
 
     // Ha a 48 óra frissítés közben lejárt, leállítjuk az időzítőt.
+
     if (!isLive && refreshTimer) {
       clearInterval(refreshTimer);
       refreshTimer = null;
@@ -1001,17 +1014,20 @@ async function loadCompetitions() {
 
     competitions = manifest.competitions;
 
-// Az élő verseny kerüljön legfelülre.
-// Az archivált versenyek dátum szerint csökkenő sorrendben következzenek.
-competitions.sort((a, b) => {
-  const aLive = isCompetitionLive(a);
-  const bLive = isCompetitionLive(b);
+    // Az élő verseny kerüljön legfelülre.
+    // Az archivált versenyek dátum szerint csökkenő sorrendben következzenek.
 
-  if (aLive && !bLive) return -1;
-  if (!aLive && bLive) return 1;
+    competitions.sort((a, b) => {
 
-  return new Date(b.date) - new Date(a.date);
-});
+      const aLive = isCompetitionLive(a);
+      const bLive = isCompetitionLive(b);
+
+      if (aLive && !bLive) return -1;
+      if (!aLive && bLive) return 1;
+
+      return new Date(b.date) - new Date(a.date);
+
+    });
 
     competitionSelect.innerHTML = "";
 
