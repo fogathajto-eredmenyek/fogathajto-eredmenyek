@@ -40,7 +40,7 @@ header {
 #site-label {
   font-size: 12px;
   font-weight: 700;
-  letter-spacing: .12em;
+  letterletter-spacing: .12em;
   text-transform: uppercase;
   color: #dbe5f0;
   margin: 0 0 8px;
@@ -323,7 +323,7 @@ footer {
 
   #site-label {
     font-size: 10px;
-    letter-spacing: .09em;
+    letterletter-spacing: .09em;
   }
 
   .archive-selector {
@@ -819,19 +819,25 @@ function render() {
 
 function isCompetitionLive(competition) {
 
-  if (!competition || competition.live !== true) return false;
+  if (!competition) return false;
 
+  // A 48 órát az első feltöltés (feltoltve) időpontjától számítjuk.
+  // A live mező értékét nem vesszük figyelembe: az állapot automatikusan,
+  // az idő leteltével archívvá válik.
   const uploadedAt = competition.feltoltve;
 
   if (!uploadedAt) return false;
 
-  // A "2026-11-05 14:52:35" formátumot is kezeli.
+  // Kezeli például a "2026-11-05 14:52:35" és az ISO formátumot is.
   const normalizedDate = String(uploadedAt).trim().replace(" ", "T");
   const uploadedTimestamp = new Date(normalizedDate).getTime();
 
   if (!Number.isFinite(uploadedTimestamp)) return false;
 
-  return Date.now() - uploadedTimestamp < LIVE_DURATION;
+  // Jövőbeli időpont ne számítson élő versenynek.
+  const elapsed = Date.now() - uploadedTimestamp;
+
+  return elapsed >= 0 && elapsed < LIVE_DURATION;
 
 }
 
