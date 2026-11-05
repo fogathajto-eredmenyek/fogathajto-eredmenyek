@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="hu">
 <head>
@@ -310,6 +311,7 @@ footer {
 /* MOBILNÉZET */
 
 @media (max-width: 600px) {
+
   header {
     padding: 19px 12px 17px;
   }
@@ -321,7 +323,7 @@ footer {
 
   #site-label {
     font-size: 10px;
-    letter-spacing: .09em;
+    letterletter-spacing: .09em;
   }
 
   .archive-selector {
@@ -417,3 +419,632 @@ footer {
 <footer>
   Az eredmények a versenyiroda adatai alapján frissülnek.
 </footer>
+
+<script>
+"use strict";
+
+const REPO_URL =
+  "https://raw.githubusercontent.com/fogathajto-eredmenyek/fogathajto-eredmenyek/main/";
+const MANIFEST_URL = REPO_URL + "versenyek.json";
+
+/* Élő eredmények időtartama: 48 óra az első feltöltéstől */
+const LIVE_DURATION = 48 * 60 * 60 * 1000;
+
+let competitions = [];
+let selectedCompetition = null;
+let refreshTimer = null;
+let requestVersion = 0;
+
+const sheets = [
+  { key: "startlista1", name: "Startlista 1. Ford." },
+  { key: "eredmeny1", name: "Eredmény 1. Ford." },
+  { key: "startlista2", name: "Startlista 2. Ford." },
+  { key: "osszetett", name: "Két Ford. Eredmény" }
+];
+
+let active = sheets[0].key;
+let currentData = {};
+
+const tabs = document.getElementById("tabs");
+const resultsRoot = document.getElementById("results");
+const statusRoot = document.getElementById("status");
+const competitionSelect = document.getElementById("competition-select");
+const eventTitle = document.getElementById("event-title");
+const eventInfo = document.getElementById("event-info");
+const liveStatus = document.querySelector(".live-status");
+
+/* A fülek létrehozása */
+
+sheets.forEach(sheet => {
+
+  const button = document.createElement("button");
+
+  button.type = "button";
+  button.className =
+    "tab" + (sheet.key === active ? " active" : "");
+
+  button.textContent = sheet.name;
+
+  button.addEventListener("click", () => {
+
+    active = sheet.key;
+
+    document.querySelectorAll(".tab").forEach(tab => {
+      tab.classList.toggle("active", tab === button);
+    });
+
+    render();
+  });
+
+  tabs.appendChild(button);
+
+});
+
+/* HTML-BIZTONSÁGOS SZÖVEGKEZELÉS */
+
+function esc(value) {
+
+  return String(value ?? "").replace(/[&<>"']/g, character => ({
+
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;"
+
+  }[character]));
+
+}
+
+/* ÜRES SOR ELLENŐRZÉSE */
+
+function emptyRow(row) {
+
+  return Array.isArray(row) &&
+    row.every(value => String(value ?? "").trim() === "");
+
+}
+
+/* BALRA IGAZÍTOTT OSZLOPOK */
+
+function isLeftAlignedColumn(index) {
+
+  if (active === "startlista1" || active === "startlista2") {
+    return index === 4 || index === 5;
+  }
+
+  if (active === "eredmeny1") {
+    return index === 4 || index === 5 || index === 6;
+  }
+
+  return false;
+
+}
+
+/* TÁBLÁZATCELLÁK LÉTREHOZÁSA */
+
+function createCells(row, selectedColumns) {
+
+  let html = "";
+
+  selectedColumns.forEach(index => {
+
+    const value = row[index] ?? "";
+
+    const className = isLeftAlignedColumn(index)
+      ? ' class="left"'
+      : "";
+
+    html += "<td" + className + ">" + esc(value) + "</td>";
+
+  });
+
+  return html;
+
+}
+
+/* EREDMÉNYEK MEGJELENÍTÉSE */
+
+function render() {
+
+  const rows = currentData[active] || [];
+
+  if (!Array.isArray(rows) || rows.length === 0) {
+
+    resultsRoot.innerHTML =
+      '<div class="empty">Még nincsenek közzétett eredmények.</div>';
+
+    return;
+
+  }
+
+  let headerIndex;
+
+  if (active === "startlista1" || active === "startlista2") {
+    headerIndex = 11;
+  } else {
+    headerIndex = 8;
+  }
+
+  if (!rows[headerIndex] || emptyRow(rows[headerIndex])) {
+    headerIndex = 0;
+  }
+
+  const headers = rows[headerIndex] || [];
+
+  let selectedColumns = [];
+
+  if (active === "startlista1") {
+
+    selectedColumns = [1, 2, 3, 4, 5, 6];
+
+  } else if (active === "startlista2") {
+
+    selectedColumns = [1, 2, 3, 4, 5, 6];
+
+  } else if (active === "eredmeny1") {
+
+    selectedColumns = [0, 1, 2, 3, 4, 5, 6, 7];
+
+  } else if (active === "osszetett") {
+
+    selectedColumns = [
+      2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
+    ];
+
+  }
+
+  const combinedClass =
+    active === "osszetett" ? " combined-wrap" : "";
+
+  let html =
+    '<div class="table-wrap' + combinedClass + '"><table><thead>';
+
+  /* ÖSSZETETT EREDMÉNY: NINCS KÜLÖN ÁLTALÁNOS FEJLÉC */
+
+  if (active === "osszetett") {
+
+    html += "</thead><tbody>";
+
+  } else {
+
+    html += "<tr>";
+
+    selectedColumns.forEach(index => {
+
+      if (headers[index] !== undefined) {
+
+        const headerValue = headers[index];
+
+        const className = isLeftAlignedColumn(index)
+          ? ' class="left"'
+          : "";
+
+        html +=
+          "<th" + className + ">" +
+          esc(headerValue) +
+          "</th>";
+
+      }
+
+    });
+
+    html += "</tr></thead><tbody>";
+
+  }
+
+  /* STARTLISTÁK */
+
+  if (active === "startlista1" || active === "startlista2") {
+
+    rows.slice(headerIndex + 1).forEach(row => {
+
+      if (!Array.isArray(row) || emptyRow(row)) return;
+
+      if (
+        row.some(value =>
+          String(value ?? "").trim().startsWith("#")
+        )
+      ) return;
+
+      const nr = String(row[1] ?? "").trim();
+      const name = String(row[4] ?? "").trim();
+
+      if (!/^\d+$/.test(nr) || name === "") return;
+
+      html += "<tr>";
+      html += createCells(row, selectedColumns);
+      html += "</tr>";
+
+    });
+
+  }
+
+  /* KÉT FORDULÓ ÖSSZETETT EREDMÉNY */
+
+  else if (active === "osszetett") {
+
+    rows.forEach(row => {
+
+      if (!Array.isArray(row) || emptyRow(row)) return;
+
+      if (
+        row.some(value =>
+          String(value ?? "").trim().startsWith("#")
+        )
+      ) return;
+
+      const categoryName = String(row[1] ?? "").trim();
+      const categoryText = String(row[2] ?? "").trim();
+
+      const isCategory =
+        categoryName !== "" &&
+        categoryText.includes("Kategória:");
+
+      /* KATEGÓRIA ÉS FORDULÓFEJLÉCEK */
+
+      if (isCategory) {
+
+        html += '<tr class="category-row">';
+
+        html +=
+          '<td colspan="5">' +
+          esc(categoryName) +
+          '</td>';
+
+        html +=
+          '<th colspan="3">I. forduló eredménye</th>';
+
+        html +=
+          '<th colspan="3">II. forduló eredménye</th>';
+
+        html +=
+          '<th colspan="3">Összetett eredmény</th>';
+
+        html += "</tr>";
+
+        html += '<tr class="combined-subheader">';
+
+        html += '<td colspan="5"></td>';
+
+        const subHeaders = [
+          "Idő", "Hibapont", "Hely",
+          "Idő", "Hibapont", "Hely",
+          "Idő", "Hibapont", "Hely"
+        ];
+
+        subHeaders.forEach(label => {
+          html += "<th>" + esc(label) + "</th>";
+        });
+
+        html += "</tr>";
+
+        return;
+
+      }
+
+      /* ISMÉTLŐDŐ OSZLOPFEJLÉC KIHAGYÁSA */
+
+      if (
+        String(row[1] ?? "").trim() === "Hely" &&
+        String(row[2] ?? "").trim() === "Nr."
+      ) return;
+
+      /* VERSENYZŐI SOR ELLENŐRZÉSE */
+
+      const nr = String(row[2] ?? "").trim();
+      const name = String(row[5] ?? "").trim();
+
+      if (!/^\d+$/.test(nr) || name === "") return;
+
+      html += "<tr>";
+      html += createCells(row, selectedColumns);
+      html += "</tr>";
+
+    });
+
+  }
+
+  /* EREDMÉNY 1. FORDULÓ */
+
+  else if (active === "eredmeny1") {
+
+    rows.forEach((row, rowIndex) => {
+
+      if (!Array.isArray(row) || emptyRow(row)) return;
+
+      if (
+        row.some(value =>
+          String(value ?? "").trim().startsWith("#")
+        )
+      ) return;
+
+      const cell1 = String(row[1] ?? "").trim();
+      const cell4 = String(row[4] ?? "").trim();
+      const cell5 = String(row[5] ?? "").trim();
+      const cell6 = String(row[6] ?? "").trim();
+
+      const isCategory =
+        cell1 !== "" &&
+        cell4.includes("Iram:") &&
+        cell5.includes("Pályahossz:") &&
+        cell6.includes("Alapidő:");
+
+      if (isCategory) {
+
+        const details = [cell4, cell5, cell6].filter(Boolean);
+
+        html += '<tr class="category-row">';
+
+        html +=
+          '<td colspan="' + selectedColumns.length + '">';
+
+        html +=
+          esc(cell1 + "  |  " + details.join("  |  "));
+
+        html += "</td></tr>";
+
+        return;
+
+      }
+
+      if (rowIndex === headerIndex) return;
+
+      if (
+        String(row[3] ?? "").trim() === "Versenyző adatai" ||
+        String(row[4] ?? "").trim() === "Versenyző adatai"
+      ) return;
+
+      const nr = String(row[1] ?? "").trim();
+      const name = String(row[4] ?? "").trim();
+
+      if (!/^\d+$/.test(nr) || name === "") return;
+
+      html += "<tr>";
+      html += createCells(row, selectedColumns);
+      html += "</tr>";
+
+    });
+
+  }
+
+  html += "</tbody></table></div>";
+
+  resultsRoot.innerHTML = html;
+
+}
+
+/* VERSENY ÉLŐ / ARCHÍV ÁLLAPOTÁNAK ELLENŐRZÉSE
+   Az első feltöltés időpontja (feltoltve) alapján. */
+function isCompetitionLive(competition) {
+  if (!competition || competition.live !== true) return false;
+
+  const uploadedAt = competition.feltoltve;
+  if (!uploadedAt) return false;
+
+  // A "2026-11-05 14:52:35" formátumot is kezeli.
+  const normalizedDate = String(uploadedAt).trim().replace(" ", "T");
+  const uploadedTimestamp = new Date(normalizedDate).getTime();
+
+  if (!Number.isFinite(uploadedTimestamp)) return false;
+
+  return Date.now() - uploadedTimestamp < LIVE_DURATION;
+}
+
+function updateCompetitionStatus(competition) {
+  const isLive = isCompetitionLive(competition);
+
+  document.getElementById("site-label").textContent = isLive
+    ? "Fogathajtó Versenyek – Élő eredmények"
+    : "Fogathajtó Versenyek – Archív eredmények";
+
+  liveStatus.innerHTML = isLive
+    ? 'Élő eredmények <span class="unofficial">(Nem hivatalos eredmény)</span>'
+    : 'Archivált eredmények <span class="unofficial">(Nem hivatalos eredmény)</span>';
+
+  return isLive;
+}
+
+/* A KIVÁLASZTOTT VERSENY ADATAINAK BETÖLTÉSE */
+
+async function refresh() {
+
+  if (!selectedCompetition) return;
+
+  const thisRequest = ++requestVersion;
+
+  const dataUrl =
+    new URL(selectedCompetition.data, REPO_URL).href;
+
+  try {
+
+    const response = await fetch(dataUrl + "?t=" + Date.now(), {
+      cache: "no-store"
+    });
+
+    if (!response.ok) {
+      throw new Error("HTTP " + response.status);
+    }
+
+    const data = await response.json();
+
+    if (!data || typeof data !== "object") {
+      throw new Error("A JSON-adat formátuma nem megfelelő.");
+    }
+
+    if (thisRequest !== requestVersion) return;
+
+    currentData = data;
+
+    render();
+
+    const isLive = updateCompetitionStatus(selectedCompetition);
+
+    statusRoot.textContent = isLive
+      ? "Utolsó frissítés: " + new Date().toLocaleTimeString("hu-HU")
+      : "Archivált eredmény – nem frissül automatikusan.";
+
+    // Ha a 48 óra frissítés közben lejárt, leállítjuk az időzítőt.
+    if (!isLive && refreshTimer) {
+      clearInterval(refreshTimer);
+      refreshTimer = null;
+    }
+
+  } catch (error) {
+
+    if (thisRequest !== requestVersion) return;
+
+    statusRoot.textContent =
+      "Kapcsolódási hiba. Újrapróbálkozás…";
+
+    console.error("Eredményfrissítési hiba:", error);
+
+  }
+
+}
+
+/* VERSENY KIVÁLASZTÁSA – FEJLÉC FRISSÍTÉSE */
+
+function selectCompetition(competition) {
+
+  selectedCompetition = competition;
+
+  requestVersion++;
+
+  /* A kiválasztott verseny neve */
+
+  eventTitle.textContent = competition.name;
+
+  /* Helyszín és dátum */
+
+  eventInfo.textContent =
+    "📍 " + (competition.location || "") +
+    "  |  📅 " + (competition.date || "");
+
+  /* Eredmény státusza */
+
+  const isLive = updateCompetitionStatus(competition);
+
+  /* Korábbi frissítő időzítő törlése */
+
+  if (refreshTimer) {
+
+    clearInterval(refreshTimer);
+    refreshTimer = null;
+
+  }
+
+  /* Adatok betöltése */
+
+  refresh();
+
+  /* Élő verseny esetén 15 másodpercenkénti frissítés */
+
+  if (isLive) {
+
+    refreshTimer = setInterval(refresh, 15000);
+
+  }
+
+}
+
+/* VERSENYARCHÍVUM BETÖLTÉSE */
+
+async function loadCompetitions() {
+
+  try {
+
+    const response = await fetch(
+      MANIFEST_URL + "?t=" + Date.now(),
+      {
+        cache: "no-store"
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error("HTTP " + response.status);
+    }
+
+    const manifest = await response.json();
+
+    if (!manifest || !Array.isArray(manifest.competitions)) {
+      throw new Error("A versenyarchívum formátuma nem megfelelő.");
+    }
+
+    competitions = manifest.competitions;
+
+    competitionSelect.innerHTML = "";
+
+    /* Versenyek hozzáadása a legördülő listához */
+
+    competitions.forEach(competition => {
+
+      const option = document.createElement("option");
+
+      option.value = competition.id;
+
+      option.textContent =
+        competition.name + " – " +
+        (competition.location || "") +
+        " (" + (competition.date || "") + ")";
+
+      competitionSelect.appendChild(option);
+
+    });
+
+    /* Archív verseny kiválasztása */
+
+    competitionSelect.addEventListener("change", () => {
+
+      const chosen = competitions.find(item =>
+        item.id === competitionSelect.value
+      );
+
+      if (chosen) {
+        selectCompetition(chosen);
+      }
+
+    });
+
+    /* Legfrissebb verseny automatikus kiválasztása */
+
+    if (competitions.length) {
+
+      const newest = competitions[0];
+
+      competitionSelect.value = newest.id;
+
+      selectCompetition(newest);
+
+    } else {
+
+      resultsRoot.innerHTML =
+        '<div class="empty">Még nincs archivált verseny.</div>';
+
+      statusRoot.textContent =
+        "Nincs megjeleníthető verseny.";
+
+    }
+
+  } catch (error) {
+
+    competitionSelect.innerHTML =
+      '<option>Az archívum nem tölthető be</option>';
+
+    statusRoot.textContent =
+      "A versenyarchívum betöltése sikertelen.";
+
+    console.error("Archívum betöltési hiba:", error);
+
+  }
+
+}
+
+/* INDÍTÁS */
+
+loadCompetitions();
+
+</script>
+
+</body>
+</html>
