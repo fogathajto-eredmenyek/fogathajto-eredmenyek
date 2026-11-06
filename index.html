@@ -539,7 +539,11 @@ function createCells(row, selectedColumns) {
       ? ' class="left"'
       : "";
 
-    html += "<td" + className + ">" + esc(value) + "</td>";
+    if (active === "osszetett" && index === 10) {
+  html += '<td style="width:35px; min-width:35px; max-width:35px; padding-left:2px; padding-right:2px;">' + esc(value) + '</td>';
+} else {
+  html += "<td" + className + ">" + esc(value) + "</td>";
+}
 
   });
 
@@ -597,11 +601,11 @@ function render() {
 
   }
 
-  const combinedClass =
-    active === "osszetett" ? " combined-wrap" : "";
+ const combinedClass =
+  active === "osszetett" ? " combined-wrap" : "";
 
-  let html =
-    '<div class="table-wrap' + combinedClass + '"><table>';
+let html =
+  '<div class="table-wrap' + combinedClass + '"><table><thead>';
 
  /* Az összetett táblázat oszlopszélességeit közvetlenül a colgroup szabályozza. */
 
