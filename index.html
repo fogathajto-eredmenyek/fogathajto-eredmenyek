@@ -603,27 +603,27 @@ function render() {
   let html =
     '<div class="table-wrap' + combinedClass + '"><table>';
 
-  /* Az összetett táblázat oszlopszélességeit közvetlenül a colgroup szabályozza. */
+ /* Az összetett táblázat oszlopszélességeit közvetlenül a colgroup szabályozza. */
 
-  if (active === "osszetett") {
+if (active === "osszetett") {
 
-    html += '<colgroup>';
+  html += '<colgroup>';
 
-    for (let i = 1; i <= selectedColumns.length; i++) {
+  for (let i = 1; i <= selectedColumns.length; i++) {
 
-      if (i === 9 || i === 12 || i === 15) {
-        html += '<col style="width:45px">';
-      } else {
-        html += '<col>';
-      }
-
+    if (i === 9 || i === 12 || i === 14) {
+      html += '<col style="width:35px; min-width:35px; max-width:35px">';
+    } else {
+      html += '<col>';
     }
-
-    html += '</colgroup>';
 
   }
 
-  html += '<thead>';
+  html += '</colgroup>';
+
+}
+
+html += '<thead>';
 
   /* ÖSSZETETT EREDMÉNY: NINCS KÜLÖN ÁLTALÁNOS FEJLÉC */
 
