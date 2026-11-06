@@ -449,6 +449,7 @@ let competitions = [];
 let selectedCompetition = null;
 let refreshTimer = null;
 let requestVersion = 0;
+let refreshInProgress = false;
 
 const sheets = [
   { key: "startlista1", name: "Startlista 1. Ford." },
@@ -560,7 +561,7 @@ function createCells(row, selectedColumns) {
 
     // A helyezések félkövér kiemelése az eredménylapokon.
     if (
-      (active === "eredmeny1" && index === 0) ||
+      (active === "eredmeny1" && index === 8) ||
       (active === "osszetett" && [9, 12, 15].includes(index))
     ) {
       classes.push("place");
@@ -622,7 +623,7 @@ function render() {
 
   } else if (active === "eredmeny1") {
 
-    selectedColumns = [0, 1, 2, 3, 4, 5, 6, 7];
+    selectedColumns = [8, 1, 2, 3, 4, 5, 6, 7];
 
   } else if (active === "osszetett") {
 
@@ -924,15 +925,17 @@ function updateCompetitionStatus(competition) {
 
 async function refresh() {
 
-  if (!selectedCompetition) return;
+  if (!selectedCompetition || refreshInProgress) return;
 
-  const thisRequest = ++requestVersion;
+  refreshInProgress = true;
+  const thisRequest = requestVersion;
 
   const dataUrl =
     new URL(selectedCompetition.data, REPO_URL).href;
 
   try {
 
+    // Egyedi lekérdezési paraméter és no-store: mindig a legfrissebb JSON-t kérjük.
     const response = await fetch(dataUrl + "?t=" + Date.now(), {
       cache: "no-store"
     });
@@ -947,20 +950,26 @@ async function refresh() {
       throw new Error("A JSON-adat formátuma nem megfelelő.");
     }
 
+    // Ha közben másik versenyt választottak, a régi válasz ne írja felül az új adatokat.
     if (thisRequest !== requestVersion) return;
 
     currentData = data;
-
     render();
 
     const isLive = updateCompetitionStatus(selectedCompetition);
 
+    let lastUpdated = new Date();
+    if (data.frissitve) {
+      const parsed = new Date(String(data.frissitve).trim().replace(" ", "T"));
+      if (Number.isFinite(parsed.getTime())) lastUpdated = parsed;
+    }
+
     statusRoot.textContent = isLive
-      ? "Utolsó frissítés: " + new Date().toLocaleTimeString("hu-HU")
+      ? "Adatfájl utolsó frissítése: " + lastUpdated.toLocaleTimeString("hu-HU") +
+        " | Ellenőrzés: " + new Date().toLocaleTimeString("hu-HU")
       : "Archivált eredmény – nem frissül automatikusan.";
 
     // Ha a 48 óra frissítés közben lejárt, leállítjuk az időzítőt.
-
     if (!isLive && refreshTimer) {
       clearInterval(refreshTimer);
       refreshTimer = null;
@@ -975,6 +984,8 @@ async function refresh() {
 
     console.error("Eredményfrissítési hiba:", error);
 
+  } finally {
+    refreshInProgress = false;
   }
 
 }
@@ -1130,6 +1141,13 @@ async function loadCompetitions() {
   }
 
 }
+
+/* Ha a böngészőlap ismét előtérbe kerül, azonnal kérjük le az eredményeket. */
+document.addEventListener("visibilitychange", () => {
+  if (!document.hidden && selectedCompetition && isCompetitionLive(selectedCompetition)) {
+    refresh();
+  }
+});
 
 /* INDÍTÁS */
 
