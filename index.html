@@ -297,7 +297,7 @@ footer {
 }
 
 /* Kizárólag az I. forduló „Hely” oszlopa */
-.table-wrap.combined-wrap .combined-subheader th:nth-child(8),
+.table-wrap.combined-wrap .combined-subheader th:nth-of-type(3),
 .table-wrap.combined-wrap td.first-round-place {
   width: 35px !important;
   min-width: 35px !important;
@@ -617,7 +617,7 @@ function render() {
   active === "osszetett" ? " combined-wrap" : "";
 
 let html =
-  '<div class="table-wrap' + combinedClass + '"><table><thead>';
+  '<div class="table-wrap' + combinedClass + '"><table>';
 
  /* Az összetett táblázat oszlopszélességeit közvetlenül a colgroup szabályozza. */
 
