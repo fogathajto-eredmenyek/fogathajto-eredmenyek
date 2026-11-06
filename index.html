@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="hu">
 <head>
@@ -297,6 +296,19 @@ footer {
   position: static !important;
 }
 
+/* Kizárólag az I. forduló „Hely” oszlopa */
+.table-wrap.combined-wrap .combined-subheader th:nth-child(8),
+.table-wrap.combined-wrap td.first-round-place {
+  width: 35px !important;
+  min-width: 35px !important;
+  max-width: 35px !important;
+  padding-left: 2px !important;
+  padding-right: 2px !important;
+  white-space: normal !important;
+  overflow: hidden;
+  text-align: center !important;
+}
+
 /* KATEGÓRIASOROK */
 
 .table-wrap.combined-wrap .category-row td {
@@ -539,11 +551,11 @@ function createCells(row, selectedColumns) {
       ? ' class="left"'
       : "";
 
-    if (active === "osszetett" && index === 10) {
-  html += '<td style="width:35px; min-width:35px; max-width:35px; padding-left:2px; padding-right:2px;">' + esc(value) + '</td>';
-} else {
-  html += "<td" + className + ">" + esc(value) + "</td>";
-}
+    if (active === "osszetett" && index === 9) {
+      html += '<td class="first-round-place">' + esc(value) + '</td>';
+    } else {
+      html += "<td" + className + ">" + esc(value) + "</td>";
+    }
 
   });
 
@@ -615,8 +627,8 @@ if (active === "osszetett") {
 
   for (let i = 1; i <= selectedColumns.length; i++) {
 
-    if (i === 9 || i === 12 || i === 14) {
-      html += '<col style="width:35px; min-width:35px; max-width:35px">';
+    if (i === 8) {
+      html += '<col style="width:35px">';
     } else {
       html += '<col>';
     }
