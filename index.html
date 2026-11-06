@@ -449,8 +449,6 @@ let competitions = [];
 let selectedCompetition = null;
 let refreshTimer = null;
 let requestVersion = 0;
-let refreshController = null;
-let refreshSequence = 0;
 
 const sheets = [
   { key: "startlista1", name: "Startlista 1. Ford." },
@@ -883,22 +881,28 @@ function isCompetitionLive(competition) {
 
   if (!competition) return false;
 
-  // A manifestben megadott live érték az elsődleges állapotjelző.
-  // Így a Pocsaji verseny live:true beállítással biztosan frissül.
+  // Ha a manifest egyértelmű live értéket ad meg, azt használjuk.
+  // Így az élő Pocsaji verseny frissül, az archivált versenyek nem.
   if (typeof competition.live === "boolean") {
     return competition.live;
   }
 
-  // Régebbi bejegyzéseknél, ahol nincs live mező, a feltöltés idejéből
-  // számoljuk a 48 órás élő időszakot.
+  // Régebbi bejegyzéseknél a feltöltés idejéből számoljuk a 48 órát.
   const uploadedAt = competition.feltoltve;
+
   if (!uploadedAt) return false;
+
+  // Kezeli például a "2026-11-05 14:52:35" és az ISO formátumot is.
 
   const normalizedDate = String(uploadedAt).trim().replace(" ", "T");
   const uploadedTimestamp = new Date(normalizedDate).getTime();
+
   if (!Number.isFinite(uploadedTimestamp)) return false;
 
+  // Jövőbeli időpont ne számítson élő versenynek.
+
   const elapsed = Date.now() - uploadedTimestamp;
+
   return elapsed >= 0 && elapsed < LIVE_DURATION;
 
 }
@@ -925,78 +929,55 @@ async function refresh() {
 
   if (!selectedCompetition) return;
 
-  const competition = selectedCompetition;
-  const thisRequest = requestVersion;
-  const thisSequence = ++refreshSequence;
+  const thisRequest = ++requestVersion;
 
-  // Egy korábbi, esetleg elakadt kérés ne akadályozza az új lekérést.
-  if (refreshController) {
-    refreshController.abort();
-  }
-  const controller = new AbortController();
-  refreshController = controller;
-
-  const dataUrl = new URL(competition.data, REPO_URL).href;
-  const requestUrl = dataUrl + (dataUrl.includes("?") ? "&" : "?") + "_=" + Date.now();
+  const dataUrl =
+    new URL(selectedCompetition.data, REPO_URL).href;
 
   try {
 
-    const response = await fetch(requestUrl, {
-      method: "GET",
-      cache: "no-store",
-      signal: controller.signal,
-      headers: {
-        "Accept": "application/json",
-        "Cache-Control": "no-cache, no-store, must-revalidate",
-        "Pragma": "no-cache"
-      }
+    const response = await fetch(dataUrl + "?t=" + Date.now(), {
+      cache: "no-store"
     });
 
     if (!response.ok) {
-      throw new Error("HTTP " + response.status + " – " + response.statusText);
+      throw new Error("HTTP " + response.status);
     }
 
     const data = await response.json();
 
-    if (!data || typeof data !== "object" || Array.isArray(data)) {
+    if (!data || typeof data !== "object") {
       throw new Error("A JSON-adat formátuma nem megfelelő.");
     }
 
-    // Csak a legutóbbi, még kiválasztott versenyhez tartozó válasz jelenhet meg.
-    if (thisRequest !== requestVersion || thisSequence !== refreshSequence) return;
+    if (thisRequest !== requestVersion) return;
 
     currentData = data;
+
     render();
 
-    const isLive = updateCompetitionStatus(competition);
-    const checkedAt = new Date();
-    let dataUpdatedText = "nincs megadva";
-
-    if (data.frissitve) {
-      const parsed = new Date(String(data.frissitve).trim().replace(" ", "T"));
-      dataUpdatedText = Number.isFinite(parsed.getTime())
-        ? parsed.toLocaleString("hu-HU")
-        : String(data.frissitve);
-    }
+    const isLive = updateCompetitionStatus(selectedCompetition);
 
     statusRoot.textContent = isLive
-      ? "Adatfájl frissítve: " + dataUpdatedText +
-        " | Sikeres lekérés: " + checkedAt.toLocaleTimeString("hu-HU")
+      ? "Utolsó frissítés: " + new Date().toLocaleTimeString("hu-HU")
       : "Archivált eredmény – nem frissül automatikusan.";
+
+    // Ha a 48 óra frissítés közben lejárt, leállítjuk az időzítőt.
+
+    if (!isLive && refreshTimer) {
+      clearInterval(refreshTimer);
+      refreshTimer = null;
+    }
 
   } catch (error) {
 
-    if (error.name === "AbortError") return;
-    if (thisRequest !== requestVersion || thisSequence !== refreshSequence) return;
+    if (thisRequest !== requestVersion) return;
 
-    statusRoot.textContent = "Frissítési hiba: " + (error.message || error) +
-      " | Újrapróbálkozás 15 mp múlva.";
+    statusRoot.textContent =
+      "Kapcsolódási hiba. Újrapróbálkozás…";
+
     console.error("Eredményfrissítési hiba:", error);
 
-  } finally {
-    if (thisSequence === refreshSequence) {
-      refreshController = null;
-    }
   }
 
 }
@@ -1008,11 +989,6 @@ function selectCompetition(competition) {
   selectedCompetition = competition;
 
   requestVersion++;
-  refreshSequence++;
-  if (refreshController) {
-    refreshController.abort();
-    refreshController = null;
-  }
 
   /* A kiválasztott verseny neve */
 
@@ -1157,13 +1133,6 @@ async function loadCompetitions() {
   }
 
 }
-
-/* Ha a böngészőlap ismét előtérbe kerül, azonnal kérjük le az eredményeket. */
-document.addEventListener("visibilitychange", () => {
-  if (!document.hidden && selectedCompetition && isCompetitionLive(selectedCompetition)) {
-    refresh();
-  }
-});
 
 /* INDÍTÁS */
 
