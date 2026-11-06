@@ -194,6 +194,11 @@ td.left {
   text-align: left !important;
 }
 
+/* Helyezések kiemelése az eredménylapokon */
+td.place {
+  font-weight: 650;
+}
+
 /* KATEGÓRIÁK */
 
 .category-row td {
@@ -547,15 +552,29 @@ function createCells(row, selectedColumns) {
 
     const value = row[index] ?? "";
 
-    const className = isLeftAlignedColumn(index)
-      ? ' class="left"'
-      : "";
+    const classes = [];
+
+    if (isLeftAlignedColumn(index)) {
+      classes.push("left");
+    }
+
+    // A helyezések félkövér kiemelése az eredménylapokon.
+    if (
+      (active === "eredmeny1" && index === 0) ||
+      (active === "osszetett" && [9, 12, 15].includes(index))
+    ) {
+      classes.push("place");
+    }
 
     if (active === "osszetett" && index === 9) {
-      html += '<td class="first-round-place">' + esc(value) + '</td>';
-    } else {
-      html += "<td" + className + ">" + esc(value) + "</td>";
+      classes.push("first-round-place");
     }
+
+    const className = classes.length
+      ? ' class="' + classes.join(" ") + '"'
+      : "";
+
+    html += "<td" + className + ">" + esc(value) + "</td>";
 
   });
 
