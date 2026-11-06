@@ -459,6 +459,8 @@ const sheets = [
 
 let active = sheets[0].key;
 let currentData = {};
+let currentDataRaw = null;
+const LIVE_REFRESH_MS = 5000;
 
 const tabs = document.getElementById("tabs");
 const resultsRoot = document.getElementById("results");
@@ -931,11 +933,15 @@ async function refresh() {
 
   const thisRequest = ++requestVersion;
 
-  const dataUrl =
-    new URL(selectedCompetition.data, REPO_URL).href;
+  // Elo verseny: a kozos elo adatfajlt olvassuk.
+  // Archivalt verseny: a sajat archiv JSON-fajljat.
+  const dataUrl = selectedCompetition.live === true
+    ? REPO_URL + "eredmenyek.json"
+    : new URL(selectedCompetition.data, REPO_URL).href;
 
   try {
 
+    // Egyedi kerescim: a GitHub CDN ne adjon vissza regi elo eredmenyt.
     const response = await fetch(dataUrl + "?t=" + Date.now(), {
       cache: "no-store"
     });
@@ -944,17 +950,22 @@ async function refresh() {
       throw new Error("HTTP " + response.status);
     }
 
-    const data = await response.json();
-
-    if (!data || typeof data !== "object") {
-      throw new Error("A JSON-adat formátuma nem megfelelő.");
-    }
+    const rawData = await response.text();
 
     if (thisRequest !== requestVersion) return;
 
-    currentData = data;
+    // Valtozatlan adat eseten nem parse-oljuk es nem rajzoljuk ujra a tablazatot.
+    if (rawData !== currentDataRaw) {
+      const data = JSON.parse(rawData);
 
-    render();
+      if (!data || typeof data !== "object") {
+        throw new Error("A JSON-adat formátuma nem megfelelő.");
+      }
+
+      currentData = data;
+      currentDataRaw = rawData;
+      render();
+    }
 
     const isLive = updateCompetitionStatus(selectedCompetition);
 
@@ -1021,7 +1032,7 @@ function selectCompetition(competition) {
 
   if (isLive) {
 
-    refreshTimer = setInterval(refresh, 15000);
+    refreshTimer = setInterval(refresh, LIVE_REFRESH_MS);
 
   }
 
