@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="hu">
 <head>
@@ -980,7 +981,11 @@ async function loadCompetitions() {
       throw new Error("A versenyarchívum formátuma nem megfelelő.");
     }
 
-    competitions = manifest.competitions;
+    competitions = manifest.competitions.slice().sort((a, b) => {
+      // Az élő verseny mindig kerüljön a lista elejére.
+      // Azonos státuszon belül az eredeti archívumsorrend megmarad.
+      return Number(b.live === true) - Number(a.live === true);
+    });
 
     competitionSelect.innerHTML = "";
 
