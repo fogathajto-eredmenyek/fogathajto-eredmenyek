@@ -1,8 +1,12 @@
+
 <!DOCTYPE html>
 <html lang="hu">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <title>Fogathajtó Versenyek – Eredmények</title>
 
 <style>
@@ -39,7 +43,7 @@ header {
 #site-label {
   font-size: 12px;
   font-weight: 700;
-  letterletter-spacing: .12em;
+  letter-spacing: .12em;
   text-transform: uppercase;
   color: #dbe5f0;
   margin: 0 0 8px;
@@ -187,19 +191,11 @@ tbody tr:not(.category-row):hover td {
   background: #f0f5fa;
 }
 
-/* Versenyző neve és egyesülete balra igazítva */
-
 td.left {
   font-weight: 650;
-  text-align: left !important;
 }
 
-/* Helyezések kiemelése az eredménylapokon */
-td.place {
-  font-weight: 650;
-}
-
-/* KATEGÓRIÁK */
+/* KATEGÓRIAS */
 
 .category-row td {
   background: #dce7f3;
@@ -241,6 +237,11 @@ footer {
   width: max-content;
   min-width: 100%;
   font-size: 12px;
+}
+
+.table-wrap.combined-wrap th,
+.table-wrap.combined-wrap td {
+  padding: 7px 6px;
 }
 
 /* RÖGZÍTETT ELSŐ OSZLOP */
@@ -301,19 +302,6 @@ footer {
   position: static !important;
 }
 
-/* Kizárólag az I. forduló „Hely” oszlopa */
-.table-wrap.combined-wrap .combined-subheader th:nth-of-type(3),
-.table-wrap.combined-wrap td.first-round-place {
-  width: 35px !important;
-  min-width: 35px !important;
-  max-width: 35px !important;
-  padding-left: 2px !important;
-  padding-right: 2px !important;
-  white-space: normal !important;
-  overflow: hidden;
-  text-align: center !important;
-}
-
 /* KATEGÓRIASOROK */
 
 .table-wrap.combined-wrap .category-row td {
@@ -338,7 +326,7 @@ footer {
 
   #site-label {
     font-size: 10px;
-    letterletter-spacing: .09em;
+    letter-spacing: .09em;
   }
 
   .archive-selector {
@@ -442,13 +430,42 @@ const REPO_URL =
   "https://raw.githubusercontent.com/fogathajto-eredmenyek/fogathajto-eredmenyek/main/";
 const MANIFEST_URL = REPO_URL + "versenyek.json";
 
-/* Élő eredmények időtartama: 48 óra az első feltöltéstől */
-const LIVE_DURATION = 48 * 60 * 60 * 1000;
+/* Egyedi kérésazonosító: a böngésző és a köztes gyorsítótár ne adjon régi JSON-t. */
+function freshUrl(url) {
+  const separator = url.includes("?") ? "&" : "?";
+  return url + separator + "_fresh=" + Date.now() + "_" + Math.random().toString(36).slice(2);
+}
+
+const FRESH_FETCH_OPTIONS = {
+  cache: "no-store",
+  headers: {
+    "Cache-Control": "no-cache, no-store, must-revalidate",
+    "Pragma": "no-cache"
+  }
+};
 
 let competitions = [];
 let selectedCompetition = null;
 let refreshTimer = null;
 let requestVersion = 0;
+
+/* Élő eredmények időtartama: 48 óra */
+const LIVE_DURATION = 48 * 60 * 60 * 1000;
+
+/* A feltöltés eredeti időpontja alapján ellenőrzi, hogy élő-e még a verseny */
+function isCompetitionLive(competition, data) {
+  if (!competition || competition.live !== true) return false;
+
+  const uploadedAt = data && data.feltoltve;
+  if (!uploadedAt) return false;
+
+  // A VBA formátuma: yyyy-mm-dd hh:mm:ss
+  const startTime = new Date(String(uploadedAt).replace(" ", "T")).getTime();
+
+  if (Number.isNaN(startTime)) return false;
+
+  return Date.now() - startTime < LIVE_DURATION;
+}
 
 const sheets = [
   { key: "startlista1", name: "Startlista 1. Ford." },
@@ -459,8 +476,6 @@ const sheets = [
 
 let active = sheets[0].key;
 let currentData = {};
-let currentDataRaw = null;
-const LIVE_REFRESH_MS = 5000;
 
 const tabs = document.getElementById("tabs");
 const resultsRoot = document.getElementById("results");
@@ -525,23 +540,17 @@ function emptyRow(row) {
 /* BALRA IGAZÍTOTT OSZLOPOK */
 
 function isLeftAlignedColumn(index) {
-  // Startlisták: versenyző neve és egyesülete
+
   if (active === "startlista1" || active === "startlista2") {
     return index === 4 || index === 5;
   }
 
-  // I. forduló eredménye: versenyző neve és egyesülete
   if (active === "eredmeny1") {
     return index === 4 || index === 5 || index === 6;
   }
 
-  // Kétfordulós összetett eredmény:
-  // a versenyző neve és egyesülete balra igazítva
-  if (active === "osszetett") {
-    return index === 5 || index === 6;
-  }
-
   return false;
+
 }
 
 /* TÁBLÁZATCELLÁK LÉTREHOZÁSA */
@@ -554,26 +563,8 @@ function createCells(row, selectedColumns) {
 
     const value = row[index] ?? "";
 
-    const classes = [];
-
-    if (isLeftAlignedColumn(index)) {
-      classes.push("left");
-    }
-
-    // A helyezések félkövér kiemelése az eredménylapokon.
-    if (
-      (active === "eredmeny1" && index === 8) ||
-      (active === "osszetett" && [9, 12, 15].includes(index))
-    ) {
-      classes.push("place");
-    }
-
-    if (active === "osszetett" && index === 9) {
-      classes.push("first-round-place");
-    }
-
-    const className = classes.length
-      ? ' class="' + classes.join(" ") + '"'
+    const className = isLeftAlignedColumn(index)
+      ? ' class="left"'
       : "";
 
     html += "<td" + className + ">" + esc(value) + "</td>";
@@ -596,6 +587,7 @@ function render() {
       '<div class="empty">Még nincsenek közzétett eredmények.</div>';
 
     return;
+
   }
 
   let headerIndex;
@@ -624,7 +616,7 @@ function render() {
 
   } else if (active === "eredmeny1") {
 
-    selectedColumns = [8, 1, 2, 3, 4, 5, 6, 7];
+    selectedColumns = [0, 1, 2, 3, 4, 5, 6, 7];
 
   } else if (active === "osszetett") {
 
@@ -634,33 +626,11 @@ function render() {
 
   }
 
- const combinedClass =
-  active === "osszetett" ? " combined-wrap" : "";
+  const combinedClass =
+    active === "osszetett" ? " combined-wrap" : "";
 
-let html =
-  '<div class="table-wrap' + combinedClass + '"><table>';
-
- /* Az összetett táblázat oszlopszélességeit közvetlenül a colgroup szabályozza. */
-
-if (active === "osszetett") {
-
-  html += '<colgroup>';
-
-  for (let i = 1; i <= selectedColumns.length; i++) {
-
-    if (i === 8) {
-      html += '<col style="width:35px">';
-    } else {
-      html += '<col>';
-    }
-
-  }
-
-  html += '</colgroup>';
-
-}
-
-html += '<thead>';
+  let html =
+    '<div class="table-wrap' + combinedClass + '"><table><thead>';
 
   /* ÖSSZETETT EREDMÉNY: NINCS KÜLÖN ÁLTALÁNOS FEJLÉC */
 
@@ -755,13 +725,13 @@ html += '<thead>';
           '</td>';
 
         html +=
-  '<th colspan="3">I. forduló<br>eredménye</th>';
+          '<th colspan="3">I. forduló eredménye</th>';
 
-html +=
-  '<th colspan="3">II. forduló<br>eredménye</th>';
+        html +=
+          '<th colspan="3">II. forduló eredménye</th>';
 
-html +=
-  '<th colspan="3">Összetett<br>eredmény</th>';
+        html +=
+          '<th colspan="3">Összetett eredmény</th>';
 
         html += "</tr>";
 
@@ -876,55 +846,6 @@ html +=
 
 }
 
-/* VERSENY ÉLŐ / ARCHÍV ÁLLAPOTÁNAK ELLENŐRZÉSE
-   Az első feltöltés időpontja (feltoltve) alapján. */
-
-function isCompetitionLive(competition) {
-
-  if (!competition) return false;
-
-  // Ha a manifest egyértelmű live értéket ad meg, azt használjuk.
-  // Így az élő Pocsaji verseny frissül, az archivált versenyek nem.
-  if (typeof competition.live === "boolean") {
-    return competition.live;
-  }
-
-  // Régebbi bejegyzéseknél a feltöltés idejéből számoljuk a 48 órát.
-  const uploadedAt = competition.feltoltve;
-
-  if (!uploadedAt) return false;
-
-  // Kezeli például a "2026-11-05 14:52:35" és az ISO formátumot is.
-
-  const normalizedDate = String(uploadedAt).trim().replace(" ", "T");
-  const uploadedTimestamp = new Date(normalizedDate).getTime();
-
-  if (!Number.isFinite(uploadedTimestamp)) return false;
-
-  // Jövőbeli időpont ne számítson élő versenynek.
-
-  const elapsed = Date.now() - uploadedTimestamp;
-
-  return elapsed >= 0 && elapsed < LIVE_DURATION;
-
-}
-
-function updateCompetitionStatus(competition) {
-
-  const isLive = isCompetitionLive(competition);
-
-  document.getElementById("site-label").textContent = isLive
-    ? "Fogathajtó Versenyek – Élő eredmények"
-    : "Fogathajtó Versenyek – Archív eredmények";
-
-  liveStatus.innerHTML = isLive
-    ? 'Élő eredmények <span class="unofficial">(Nem hivatalos eredmény)</span>'
-    : 'Archivált eredmények <span class="unofficial">(Nem hivatalos eredmény)</span>';
-
-  return isLive;
-
-}
-
 /* A KIVÁLASZTOTT VERSENY ADATAINAK BETÖLTÉSE */
 
 async function refresh() {
@@ -933,48 +854,50 @@ async function refresh() {
 
   const thisRequest = ++requestVersion;
 
-  // Elo verseny: a kozos elo adatfajlt olvassuk.
-  // Archivalt verseny: a sajat archiv JSON-fajljat.
-  const dataUrl = selectedCompetition.live === true
-    ? REPO_URL + "eredmenyek.json"
-    : new URL(selectedCompetition.data, REPO_URL).href;
+  const dataUrl =
+    new URL(selectedCompetition.data, REPO_URL).href;
 
   try {
 
-    // Egyedi kerescim: a GitHub CDN ne adjon vissza regi elo eredmenyt.
-    const response = await fetch(dataUrl + "?t=" + Date.now(), {
-      cache: "no-store"
-    });
+    const response = await fetch(freshUrl(dataUrl), FRESH_FETCH_OPTIONS);
 
     if (!response.ok) {
       throw new Error("HTTP " + response.status);
     }
 
-    const rawData = await response.text();
+    const data = await response.json();
+
+    if (!data || typeof data !== "object") {
+      throw new Error("A JSON-adat formátuma nem megfelelő.");
+    }
 
     if (thisRequest !== requestVersion) return;
 
-    // Valtozatlan adat eseten nem parse-oljuk es nem rajzoljuk ujra a tablazatot.
-    if (rawData !== currentDataRaw) {
-      const data = JSON.parse(rawData);
+    currentData = data;
 
-      if (!data || typeof data !== "object") {
-        throw new Error("A JSON-adat formátuma nem megfelelő.");
-      }
+    render();
 
-      currentData = data;
-      currentDataRaw = rawData;
-      render();
-    }
+    // A 48 órás határ ellenőrzése az eredményadatok feltöltési ideje alapján
+    const isLive = isCompetitionLive(selectedCompetition, data);
 
-    const isLive = updateCompetitionStatus(selectedCompetition);
+    // Fejléc felső felirata
+    document.getElementById("site-label").textContent =
+      isLive
+        ? "Fogathajtó Versenyek – Élő eredmények"
+        : "Fogathajtó Versenyek – Archív eredmények";
 
+    // Élő / archivált állapot a verseny neve alatt
+    liveStatus.innerHTML = isLive
+      ? 'Élő eredmények <span class="unofficial">(Nem hivatalos eredmény)</span>'
+      : 'Archivált eredmények <span class="unofficial">(Nem hivatalos eredmény)</span>';
+
+    // Alsó státuszsor
     statusRoot.textContent = isLive
-      ? "Utolsó frissítés: " + new Date().toLocaleTimeString("hu-HU")
+      ? "Utolsó frissítés: " +
+        new Date().toLocaleTimeString("hu-HU")
       : "Archivált eredmény – nem frissül automatikusan.";
 
-    // Ha a 48 óra frissítés közben lejárt, leállítjuk az időzítőt.
-
+    // A 48 óra letelte után az automatikus frissítés leállítása
     if (!isLive && refreshTimer) {
       clearInterval(refreshTimer);
       refreshTimer = null;
@@ -1005,6 +928,13 @@ function selectCompetition(competition) {
 
   eventTitle.textContent = competition.name;
 
+  /* Élő vagy archív felirat */
+
+  document.getElementById("site-label").textContent =
+    competition.live
+      ? "Fogathajtó Versenyek – Élő eredmények"
+      : "Fogathajtó Versenyek – Archív eredmények";
+
   /* Helyszín és dátum */
 
   eventInfo.textContent =
@@ -1013,7 +943,9 @@ function selectCompetition(competition) {
 
   /* Eredmény státusza */
 
-  const isLive = updateCompetitionStatus(competition);
+  liveStatus.innerHTML = competition.live
+    ? 'Élő eredmények <span class="unofficial">(Nem hivatalos eredmény)</span>'
+    : 'Archivált eredmények <span class="unofficial">(Nem hivatalos eredmény)</span>';
 
   /* Korábbi frissítő időzítő törlése */
 
@@ -1030,9 +962,9 @@ function selectCompetition(competition) {
 
   /* Élő verseny esetén 15 másodpercenkénti frissítés */
 
-  if (isLive) {
+  if (competition.live) {
 
-    refreshTimer = setInterval(refresh, LIVE_REFRESH_MS);
+    refreshTimer = setInterval(refresh, 15000);
 
   }
 
@@ -1045,10 +977,8 @@ async function loadCompetitions() {
   try {
 
     const response = await fetch(
-      MANIFEST_URL + "?t=" + Date.now(),
-      {
-        cache: "no-store"
-      }
+      freshUrl(MANIFEST_URL),
+      FRESH_FETCH_OPTIONS
     );
 
     if (!response.ok) {
@@ -1062,21 +992,6 @@ async function loadCompetitions() {
     }
 
     competitions = manifest.competitions;
-
-    // Az élő verseny kerüljön legfelülre.
-    // Az archivált versenyek dátum szerint csökkenő sorrendben következzenek.
-
-    competitions.sort((a, b) => {
-
-      const aLive = isCompetitionLive(a);
-      const bLive = isCompetitionLive(b);
-
-      if (aLive && !bLive) return -1;
-      if (!aLive && bLive) return 1;
-
-      return new Date(b.date) - new Date(a.date);
-
-    });
 
     competitionSelect.innerHTML = "";
 
