@@ -1,12 +1,8 @@
-
 <!DOCTYPE html>
 <html lang="hu">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<meta http-equiv="Pragma" content="no-cache">
-<meta http-equiv="Expires" content="0">
 <title>Fogathajtó Versenyek – Eredmények</title>
 
 <style>
@@ -430,19 +426,11 @@ const REPO_URL =
   "https://raw.githubusercontent.com/fogathajto-eredmenyek/fogathajto-eredmenyek/main/";
 const MANIFEST_URL = REPO_URL + "versenyek.json";
 
-/* Egyedi kérésazonosító: a böngésző és a köztes gyorsítótár ne adjon régi JSON-t. */
+/* Egyedi URL minden lekéréshez a gyorsítótárazás elkerülésére. */
 function freshUrl(url) {
   const separator = url.includes("?") ? "&" : "?";
-  return url + separator + "_fresh=" + Date.now() + "_" + Math.random().toString(36).slice(2);
+  return url + separator + "_=" + Date.now();
 }
-
-const FRESH_FETCH_OPTIONS = {
-  cache: "no-store",
-  headers: {
-    "Cache-Control": "no-cache, no-store, must-revalidate",
-    "Pragma": "no-cache"
-  }
-};
 
 let competitions = [];
 let selectedCompetition = null;
@@ -859,7 +847,9 @@ async function refresh() {
 
   try {
 
-    const response = await fetch(freshUrl(dataUrl), FRESH_FETCH_OPTIONS);
+    const response = await fetch(freshUrl(dataUrl), {
+      cache: "no-store"
+    });
 
     if (!response.ok) {
       throw new Error("HTTP " + response.status);
@@ -976,10 +966,9 @@ async function loadCompetitions() {
 
   try {
 
-    const response = await fetch(
-      freshUrl(MANIFEST_URL),
-      FRESH_FETCH_OPTIONS
-    );
+    const response = await fetch(freshUrl(MANIFEST_URL), {
+      cache: "no-store"
+    });
 
     if (!response.ok) {
       throw new Error("HTTP " + response.status);
