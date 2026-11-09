@@ -387,6 +387,12 @@ footer {
   padding: 9px;
 }
 
+.estimated-start {
+  text-align: right !important;
+  font-weight: 700;
+  min-width: 105px;
+}
+
 /* MOBILNÉZET */
 
 @media (max-width: 600px) {
@@ -803,12 +809,13 @@ function render() {
           esc(headerValue) +
           "</th>";
 
-        if (isStartlist && startSchedule && index === 4) {
-          html += '<th>Becsült start</th>';
-        }
       }
 
     });
+
+    if (isStartlist && startSchedule) {
+      html += '<th class="estimated-start">Becsült start</th>';
+    }
 
     html += "</tr></thead><tbody>";
 
@@ -838,10 +845,10 @@ function render() {
       selectedColumns.forEach(index => {
         const className = isLeftAlignedColumn(index) ? ' class="left"' : "";
         html += "<td" + className + ">" + esc(row[index] ?? "") + "</td>";
-        if (startSchedule && index === 4) {
-          html += "<td><strong>" + esc(formatEstimatedStart(startSchedule, competitorIndex)) + "</strong></td>";
-        }
       });
+      if (startSchedule) {
+        html += '<td class="estimated-start"><strong>' + esc(formatEstimatedStart(startSchedule, competitorIndex)) + '</strong></td>';
+      }
       html += "</tr>";
       competitorIndex++;
 
