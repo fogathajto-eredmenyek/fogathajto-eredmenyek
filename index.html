@@ -893,8 +893,11 @@ async function refresh() {
 
   const thisRequest = ++requestVersion;
 
-  const dataUrl =
-    new URL(selectedCompetition.data, REPO_URL).href;
+  // Élő versenynél a gyökérmappában lévő eredmenyek.json az aktuális adatforrás.
+  // Lezárt versenynél a verseny saját archív JSON-fájlját töltjük be.
+  const dataUrl = selectedCompetition.live === true
+    ? new URL("eredmenyek.json", REPO_URL).href
+    : new URL(selectedCompetition.data, REPO_URL).href;
 
   try {
 
