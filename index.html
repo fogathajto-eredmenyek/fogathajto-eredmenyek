@@ -405,6 +405,21 @@ footer {
   min-width: 105px;
 }
 
+/* A becsült startidő maradjon látható vízszintes görgetés közben is. */
+.table-wrap.startlist-wrap .estimated-start {
+  position: sticky;
+  right: 0;
+  z-index: 3;
+  background: #eaf0f7;
+  box-shadow: -3px 0 5px #00000012;
+}
+.table-wrap.startlist-wrap tbody .estimated-start {
+  background: #fff;
+}
+.table-wrap.startlist-wrap tbody tr:nth-child(even) .estimated-start {
+  background: #fafbfd;
+}
+
 /* MOBILNÉZET */
 
 @media (max-width: 600px) {
@@ -561,7 +576,7 @@ const baseSheets = [
 ];
 const optionalSheets = [
   { key: "osszevetesStart", name: "Összevetés startlista" },
-  { key: "vegso", name: "Végső nyomtatás" }
+  { key: "vegso", name: "Végeredmény" }
 ];
 
 let active = baseSheets[0].key;
@@ -804,7 +819,7 @@ function render() {
   const startSchedule = (active === "startlista1" || active === "startlista2") ? parseStartSchedule(rows) : null;
 
   const combinedClass =
-    active === "osszetett" ? " combined-wrap" : (active === "vegso" ? " final-wrap" : "");
+    active === "osszetett" ? " combined-wrap" : (active === "vegso" ? " final-wrap" : (isStartlist ? " startlist-wrap" : ""));
 
   let html =
     ((active === "startlista1" || active === "startlista2")
