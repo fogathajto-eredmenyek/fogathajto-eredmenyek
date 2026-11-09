@@ -281,6 +281,18 @@ footer {
   padding: 22px 16px;
 }
 
+/* VÉGSŐ NYOMTATÁS */
+.table-wrap.final-wrap table {
+  width: max-content;
+  min-width: 100%;
+  table-layout: auto;
+  font-size: 12px;
+}
+.table-wrap.final-wrap th,
+.table-wrap.final-wrap td {
+  padding: 7px 6px;
+}
+
 /* KÉT FORDULÓ ÖSSZETETT EREDMÉNY */
 
 .table-wrap.combined-wrap table {
@@ -541,14 +553,18 @@ function isCompetitionLive(competition, data) {
   return Date.now() - startTime < LIVE_DURATION;
 }
 
-const sheets = [
+const baseSheets = [
   { key: "startlista1", name: "Startlista 1. Ford." },
   { key: "eredmeny1", name: "Eredmény 1. Ford." },
   { key: "startlista2", name: "Startlista 2. Ford." },
   { key: "osszetett", name: "Két Ford. Eredmény" }
 ];
+const optionalSheets = [
+  { key: "osszevetesStart", name: "Összevetés startlista" },
+  { key: "vegso", name: "Végső nyomtatás" }
+];
 
-let active = sheets[0].key;
+let active = baseSheets[0].key;
 let currentData = {};
 
 const tabs = document.getElementById("tabs");
@@ -559,32 +575,33 @@ const eventTitle = document.getElementById("event-title");
 const eventInfo = document.getElementById("event-info");
 const liveStatus = document.querySelector(".live-status");
 
-/* A fülek létrehozása */
+/* A fülek létrehozása – az összevetéses fülek csak szükség esetén látszanak. */
 
-sheets.forEach(sheet => {
+function renderTabs() {
+  const hasTie = currentData.vanOsszevetes === true;
+  const visibleSheets = hasTie
+    ? baseSheets.slice(0, 3).concat(optionalSheets)
+    : baseSheets;
 
-  const button = document.createElement("button");
+  tabs.innerHTML = "";
 
-  button.type = "button";
-  button.className =
-    "tab" + (sheet.key === active ? " active" : "");
+  if (!visibleSheets.some(sheet => sheet.key === active)) {
+    active = visibleSheets[0].key;
+  }
 
-  button.textContent = sheet.name;
-
-  button.addEventListener("click", () => {
-
-    active = sheet.key;
-
-    document.querySelectorAll(".tab").forEach(tab => {
-      tab.classList.toggle("active", tab === button);
+  visibleSheets.forEach(sheet => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "tab" + (sheet.key === active ? " active" : "");
+    button.textContent = sheet.name;
+    button.addEventListener("click", () => {
+      active = sheet.key;
+      renderTabs();
+      render();
     });
-
-    render();
+    tabs.appendChild(button);
   });
-
-  tabs.appendChild(button);
-
-});
+}
 
 /* HTML-BIZTONSÁGOS SZÖVEGKEZELÉS */
 
@@ -615,8 +632,14 @@ function emptyRow(row) {
 
 function isLeftAlignedColumn(index) {
 
-  if (active === "startlista1" || active === "startlista2") {
-    return index === 4 || index === 5;
+  if (active === "startlista1" || active === "startlista2" || active === "osszevetesStart") {
+    return active === "osszevetesStart"
+      ? index === 4 || index === 5
+      : index === 4 || index === 5;
+  }
+
+  if (active === "vegso") {
+    return index === 5 || index === 6;
   }
 
   if (active === "eredmeny1") {
@@ -735,7 +758,7 @@ function render() {
 
   let headerIndex;
 
-  if (active === "startlista1" || active === "startlista2") {
+  if (active === "startlista1" || active === "startlista2" || active === "osszevetesStart") {
     headerIndex = 11;
   } else {
     headerIndex = 8;
@@ -767,13 +790,21 @@ function render() {
       2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
     ];
 
+  } else if (active === "osszevetesStart") {
+
+    selectedColumns = [0, 1, 2, 3, 4, 5, 6];
+
+  } else if (active === "vegso") {
+
+    selectedColumns = Array.from({ length: 19 }, (_, index) => index);
+
   }
 
-  const isStartlist = active === "startlista1" || active === "startlista2";
-  const startSchedule = isStartlist ? parseStartSchedule(rows) : null;
+  const isStartlist = active === "startlista1" || active === "startlista2" || active === "osszevetesStart";
+  const startSchedule = (active === "startlista1" || active === "startlista2") ? parseStartSchedule(rows) : null;
 
   const combinedClass =
-    active === "osszetett" ? " combined-wrap" : "";
+    active === "osszetett" ? " combined-wrap" : (active === "vegso" ? " final-wrap" : "");
 
   let html =
     ((active === "startlista1" || active === "startlista2")
@@ -828,7 +859,7 @@ function render() {
 
   /* STARTLISTÁK */
 
-  if (active === "startlista1" || active === "startlista2") {
+  if (active === "startlista1" || active === "startlista2" || active === "osszevetesStart") {
 
     let competitorIndex = 0;
     rows.slice(headerIndex + 1).forEach(row => {
@@ -1009,6 +1040,30 @@ function render() {
 
   }
 
+  /* VÉGSŐ NYOMTATÁS – az Excel végső eredménylapjának adatai */
+  else if (active === "vegso") {
+
+    rows.slice(headerIndex + 1).forEach(row => {
+      if (!Array.isArray(row) || emptyRow(row)) return;
+      if (row.some(value => String(value ?? "").trim().startsWith("#"))) return;
+
+      // Az ismétlődő oszlopfejléceket nem jelenítjük meg újra.
+      if (
+        String(row[1] ?? "").trim() === "Hely" &&
+        String(row[2] ?? "").trim() === "Nr."
+      ) return;
+
+      const nr = String(row[2] ?? "").trim();
+      const name = String(row[5] ?? "").trim();
+      if (!/^\d+$/.test(nr) || name === "") return;
+
+      html += "<tr>";
+      html += createCells(row, selectedColumns);
+      html += "</tr>";
+    });
+
+  }
+
   html += "</tbody></table></div>";
 
   resultsRoot.innerHTML = html;
@@ -1048,6 +1103,7 @@ async function refresh() {
     if (thisRequest !== requestVersion) return;
 
     currentData = data;
+    renderTabs();
 
     render();
 
