@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="hu">
 <head>
@@ -186,6 +185,12 @@ tbody tr:not(.category-row):nth-child(even) td {
 
 tbody tr:not(.category-row):hover td {
   background: #f0f5fa;
+}
+
+/* BALRA IGAZÍTOTT VERSENYZŐ- ÉS EGYESÜLETADATOK */
+th.left,
+td.left {
+  text-align: left;
 }
 
 td.left {
@@ -536,6 +541,12 @@ function isLeftAlignedColumn(index) {
 
   if (active === "eredmeny1") {
     return index === 4 || index === 5 || index === 6;
+  }
+
+  if (active === "osszetett") {
+    // A kiválasztott oszlopok között az 5. a versenyző neve,
+    // a 6. az egyesület.
+    return index === 5 || index === 6;
   }
 
   return false;
