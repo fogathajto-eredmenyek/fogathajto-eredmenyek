@@ -400,9 +400,16 @@ footer {
 }
 
 .estimated-start {
-  text-align: right !important;
+  text-align: center !important;
   font-weight: 700;
-  min-width: 105px;
+  width: 72px !important;
+  min-width: 72px !important;
+  max-width: 72px !important;
+  padding-left: 3px !important;
+  padding-right: 3px !important;
+  white-space: nowrap;
+  box-sizing: border-box;
+  font-size: 11px;
 }
 
 /* A becsült startidő maradjon látható vízszintes görgetés közben is. */
@@ -468,6 +475,15 @@ footer {
   .table-wrap.combined-wrap th,
   .table-wrap.combined-wrap td {
     padding: 6px 5px;
+  }
+
+  .table-wrap.startlist-wrap .estimated-start {
+    width: 68px !important;
+    min-width: 68px !important;
+    max-width: 68px !important;
+    padding-left: 2px !important;
+    padding-right: 2px !important;
+    font-size: 10px;
   }
 }
 </style>
@@ -865,7 +881,7 @@ function render() {
     });
 
     if (isStartlist && startSchedule) {
-      html += '<th class="estimated-start">Becsült start</th>';
+      html += '<th class="estimated-start">Becsült<br>start</th>';
     }
 
     html += "</tr></thead><tbody>";
