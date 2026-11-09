@@ -1,28 +1,36 @@
 ﻿{
   "competitions": [
     {
-      "id": "2026-11-03-sárrétudvari-fogathajtó-verseny",
-      "name": "Sárrétudvari Fogathajtó Verseny",
-      "location": "Sárrétudvari",
+      "id": "2026-11-03-s\u00E1rr\u00E9tudvari-fogathajt\u00F3-verseny",
+      "name": "S\u00E1rr\u00E9tudvari Fogathajt\u00F3 Verseny",
+      "location": "S\u00E1rr\u00E9tudvari",
       "date": "2026. 11. 03.",
-      "data": "versenyek/2026-11-03-sárrétudvari-fogathajtó-verseny/eredmenyek.json",
+      "data": "versenyek/2026-11-03-s\u00E1rr\u00E9tudvari-fogathajt\u00F3-verseny/eredmenyek.json",
       "live": false
     },
     {
       "id": "2026-10-28-fulop",
-      "name": "Fülöpi Fogathajtó Verseny",
-      "location": "Fülöp",
+      "name": "F\u00FCl\u00F6pi Fogathajt\u00F3 Verseny",
+      "location": "F\u00FCl\u00F6p",
       "date": "2026-10-28",
       "data": "versenyek/2026-10-28-fulop/eredmenyek.json",
       "live": false
     },
     {
       "id": "2026-07-13-pocsaj",
-      "name": "Pocsaji Fogathajtó Verseny",
+      "name": "Pocsaji Fogathajt\u00F3 Verseny",
       "location": "Pocsaj",
       "date": "2026-07-13",
       "data": "versenyek/2026-07-13-pocsaj/eredmenyek.json",
       "live": false
+    },
+    {
+      "id": "2026-11-09-fuzesgyarmat",
+      "name": "F\u00FCzesgyarmati Fogathajt\u00F3 Verseny",
+      "location": "F\u00FCzesgyarmat",
+      "date": "2026-11-09",
+      "data": "versenyek/2026-11-09-fuzesgyarmat/eredmenyek.json",
+      "live": true
     }
   ]
 }
