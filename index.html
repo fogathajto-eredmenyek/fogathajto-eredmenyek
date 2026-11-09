@@ -660,7 +660,12 @@ function createCells(row, selectedColumns) {
 
 }
 
-/* STARTLISTA PÁLYAADATAI – a 6 kategóriasorból csak a kitöltöttek jelennek meg. */
+/* STARTLISTA PÁLYAADATAI – a 6 kategóriasorból csak a kitöltöttek jelennek meg.
+   A címkék a fejlécben már szerepelnek, ezért a cellákban csak az érték marad. */
+function courseValue(value, label) {
+  return String(value ?? "").trim().replace(new RegExp("^" + label + "\\s*:\\s*", "i"), "").trim();
+}
+
 function buildStartlistCourse(rows) {
   const categoryRows = rows.slice(5, 11)
     .filter(row => Array.isArray(row) && String(row[1] ?? "").trim() !== "");
@@ -676,9 +681,9 @@ function buildStartlistCourse(rows) {
   categoryRows.forEach(row => {
     html += "<tr>" +
       "<td>" + esc(row[1]) + "</td>" +
-      "<td>" + esc(row[4]) + "</td>" +
-      "<td>" + esc(row[5]) + "</td>" +
-      "<td>" + esc(row[6]) + "</td>" +
+      "<td>" + esc(courseValue(row[4], "Iram")) + "</td>" +
+      "<td>" + esc(courseValue(row[5], "Pályahossz")) + "</td>" +
+      "<td>" + esc(courseValue(row[6], "Alapidő")) + "</td>" +
       "</tr>";
   });
 
