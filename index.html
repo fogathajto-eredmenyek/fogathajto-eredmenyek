@@ -247,18 +247,9 @@ footer {
   padding: 7px 6px;
 }
 
-/* A három „Hely” oszlop maradjon keskeny, a többi oszlop természetes szélességű. */
-.table-wrap.combined-wrap th:nth-child(8),
-.table-wrap.combined-wrap td:nth-child(8),
-.table-wrap.combined-wrap th:nth-child(11),
-.table-wrap.combined-wrap td:nth-child(11),
-.table-wrap.combined-wrap th:nth-child(14),
-.table-wrap.combined-wrap td:nth-child(14) {
-  width: 40px;
-  min-width: 40px;
-  padding-left: 4px;
-  padding-right: 4px;
-  white-space: nowrap;
+/* Csak az I. forduló helyezésoszlopa kap szűkebb szélességet. */
+.table-wrap.combined-wrap col.first-round-place {
+  width: 34px;
 }
 
 /* RÖGZÍTETT ELSŐ OSZLOP */
@@ -645,7 +636,15 @@ function render() {
     active === "osszetett" ? " combined-wrap" : "";
 
   let html =
-    '<div class="table-wrap' + combinedClass + '"><table><thead>';
+    '<div class="table-wrap' + combinedClass + '"><table>' +
+    (active === "osszetett"
+      ? '<colgroup>' +
+        '<col><col><col><col><col><col><col>' +
+        '<col class="first-round-place">' +
+        '<col><col><col><col><col><col>' +
+        '</colgroup>'
+      : '') +
+    '<thead>';
 
   /* ÖSSZETETT EREDMÉNY: NINCS KÜLÖN ÁLTALÁNOS FEJLÉC */
 
