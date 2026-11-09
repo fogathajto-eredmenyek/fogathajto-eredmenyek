@@ -208,7 +208,55 @@ td.left {
   padding: 11px 12px;
 }
 
-/* ÁLLAPOTJELZÉS */
+
+
+/* STARTLISTA – KATEGÓRIÁNKÉNTI PÁLYAADATOK */
+.startlist-course {
+  margin: 0 0 12px;
+  padding: 12px;
+  background: #f8fafc;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+.startlist-course-title {
+  margin: 0 0 8px;
+  color: var(--navy);
+  font-size: 13px;
+  font-weight: 750;
+}
+.startlist-course table {
+  width: 100%;
+  min-width: 0;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.startlist-course th,
+.startlist-course td {
+  padding: 7px 9px;
+  border: 1px solid var(--line);
+  white-space: normal;
+}
+.startlist-course th {
+  position: static;
+  background: #eaf0f7;
+}
+.startlist-course td:first-child {
+  text-align: left;
+  font-weight: 650;
+}
+@media (max-width: 600px) {
+  .startlist-course {
+    padding: 9px;
+  }
+  .startlist-course table {
+    font-size: 11px;
+  }
+  .startlist-course th,
+  .startlist-course td {
+    padding: 6px 4px;
+  }
+}
+\n/* ÁLLAPOTJELZÉS */
 
 #status {
   font-size: 12px;
@@ -606,6 +654,32 @@ function createCells(row, selectedColumns) {
 
 }
 
+/* STARTLISTA PÁLYAADATAI – a 6 kategóriasorból csak a kitöltöttek jelennek meg. */
+function buildStartlistCourse(rows) {
+  const categoryRows = rows.slice(5, 11)
+    .filter(row => Array.isArray(row) && String(row[1] ?? "").trim() !== "");
+
+  if (!categoryRows.length) return "";
+
+  let html = '<div class="startlist-course">' +
+    '<div class="startlist-course-title">Kategóriánkénti pályaadatok</div>' +
+    '<div class="table-wrap"><table><thead><tr>' +
+    '<th>Kategória</th><th>Iram</th><th>Pályahossz</th><th>Alapidő</th>' +
+    '</tr></thead><tbody>';
+
+  categoryRows.forEach(row => {
+    html += "<tr>" +
+      "<td>" + esc(row[1]) + "</td>" +
+      "<td>" + esc(row[4]) + "</td>" +
+      "<td>" + esc(row[5]) + "</td>" +
+      "<td>" + esc(row[6]) + "</td>" +
+      "</tr>";
+  });
+
+  html += "</tbody></table></div></div>";
+  return html;
+}
+
 /* EREDMÉNYEK MEGJELENÍTÉSE */
 
 function render() {
@@ -661,6 +735,9 @@ function render() {
     active === "osszetett" ? " combined-wrap" : "";
 
   let html =
+    ((active === "startlista1" || active === "startlista2")
+      ? buildStartlistCourse(rows)
+      : "") +
     '<div class="table-wrap' + combinedClass + '"><table>' +
     (active === "osszetett"
       ? '<colgroup>' +
