@@ -680,6 +680,33 @@ function buildStartlistCourse(rows) {
   return html;
 }
 
+/* BECSÜLT STARTIDŐK – AW6: kezdés, AW7: perc/versenyző.
+   A VBA a UsedRange teljes szélességét JSON-ba menti, ezért AW indexe 48. */
+function parseStartSchedule(rows) {
+  const startRow = rows[5] || []; // Excel 6. sor
+  const intervalRow = rows[6] || []; // Excel 7. sor
+  const rawStart = String(startRow[48] ?? "").trim();
+  const rawInterval = String(intervalRow[48] ?? "").trim();
+  const timeMatch = rawStart.match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?$/);
+  const intervalMatch = rawInterval.match(/-?\d+(?:[.,]\d+)?/);
+  if (!timeMatch || !intervalMatch) return null;
+  const hours = Number(timeMatch[1]);
+  const minutes = Number(timeMatch[2]);
+  const seconds = Number(timeMatch[3] || 0);
+  const interval = Number(intervalMatch[0].replace(",", "."));
+  if (hours > 23 || minutes > 59 || seconds > 59 || !Number.isFinite(interval) || interval <= 0) return null;
+  return { startSeconds: hours * 3600 + minutes * 60 + seconds, intervalSeconds: interval * 60 };
+}
+
+function formatEstimatedStart(schedule, competitorIndex) {
+  const totalSeconds = Math.round(schedule.startSeconds + competitorIndex * schedule.intervalSeconds);
+  const daySeconds = 24 * 60 * 60;
+  const wrapped = ((totalSeconds % daySeconds) + daySeconds) % daySeconds;
+  const hours = Math.floor(wrapped / 3600);
+  const minutes = Math.floor((wrapped % 3600) / 60);
+  return String(hours).padStart(2, "0") + ":" + String(minutes).padStart(2, "0");
+}
+
 /* EREDMÉNYEK MEGJELENÍTÉSE */
 
 function render() {
@@ -731,6 +758,9 @@ function render() {
 
   }
 
+  const isStartlist = active === "startlista1" || active === "startlista2";
+  const startSchedule = isStartlist ? parseStartSchedule(rows) : null;
+
   const combinedClass =
     active === "osszetett" ? " combined-wrap" : "";
 
@@ -773,6 +803,9 @@ function render() {
           esc(headerValue) +
           "</th>";
 
+        if (isStartlist && startSchedule && index === 4) {
+          html += '<th>Becsült start</th>';
+        }
       }
 
     });
@@ -785,6 +818,7 @@ function render() {
 
   if (active === "startlista1" || active === "startlista2") {
 
+    let competitorIndex = 0;
     rows.slice(headerIndex + 1).forEach(row => {
 
       if (!Array.isArray(row) || emptyRow(row)) return;
@@ -801,8 +835,15 @@ function render() {
       if (!/^\d+$/.test(nr) || name === "") return;
 
       html += "<tr>";
-      html += createCells(row, selectedColumns);
+      selectedColumns.forEach(index => {
+        const className = isLeftAlignedColumn(index) ? ' class="left"' : "";
+        html += "<td" + className + ">" + esc(row[index] ?? "") + "</td>";
+        if (startSchedule && index === 4) {
+          html += "<td><strong>" + esc(formatEstimatedStart(startSchedule, competitorIndex)) + "</strong></td>";
+        }
+      });
       html += "</tr>";
+      competitorIndex++;
 
     });
 
