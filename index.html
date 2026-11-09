@@ -247,9 +247,18 @@ footer {
   padding: 7px 6px;
 }
 
-/* Csak az I. forduló helyezésoszlopa kap szűkebb szélességet. */
-.table-wrap.combined-wrap col.first-round-place {
-  width: 34px;
+/* A három „Hely” oszlop maradjon keskeny, a többi oszlop természetes szélességű. */
+.table-wrap.combined-wrap th:nth-child(8),
+.table-wrap.combined-wrap td:nth-child(8),
+.table-wrap.combined-wrap th:nth-child(11),
+.table-wrap.combined-wrap td:nth-child(11),
+.table-wrap.combined-wrap th:nth-child(14),
+.table-wrap.combined-wrap td:nth-child(14) {
+  width: 40px;
+  min-width: 40px;
+  padding-left: 4px;
+  padding-right: 4px;
+  white-space: nowrap;
 }
 
 /* RÖGZÍTETT ELSŐ OSZLOP */
@@ -308,6 +317,17 @@ footer {
   color: var(--navy);
   font-weight: 700;
   position: static !important;
+}
+
+/* Az első forduló „Hely” fejléc- és adatcellája – korábbi bevált javítás. */
+.table-wrap.combined-wrap .combined-subheader th:nth-of-type(3),
+.table-wrap.combined-wrap td.first-round-place {
+  width: 35px !important;
+  min-width: 35px !important;
+  max-width: 35px !important;
+  padding-left: 3px !important;
+  padding-right: 3px !important;
+  white-space: nowrap;
 }
 
 /* KATEGÓRIASOROK */
@@ -569,8 +589,13 @@ function createCells(row, selectedColumns) {
 
     const value = row[index] ?? "";
 
-    const className = isLeftAlignedColumn(index)
-      ? ' class="left"'
+    let classes = [];
+    if (isLeftAlignedColumn(index)) classes.push("left");
+    if (active === "osszetett" && index === 9) {
+      classes.push("first-round-place");
+    }
+    const className = classes.length
+      ? ' class="' + classes.join(" ") + '"'
       : "";
 
     html += "<td" + className + ">" + esc(value) + "</td>";
@@ -640,7 +665,7 @@ function render() {
     (active === "osszetett"
       ? '<colgroup>' +
         '<col><col><col><col><col><col><col>' +
-        '<col class="first-round-place">' +
+        '<col style="width:35px">' +
         '<col><col><col><col><col><col>' +
         '</colgroup>'
       : '') +
