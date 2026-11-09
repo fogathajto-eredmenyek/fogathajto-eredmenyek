@@ -236,26 +236,37 @@ footer {
 /* KÉT FORDULÓ ÖSSZETETT EREDMÉNY */
 
 .table-wrap.combined-wrap table {
-  width: max-content;
-  min-width: 100%;
+  width: 904px;
+  min-width: 904px;
+  table-layout: fixed;
   font-size: 12px;
 }
+
+/* A 14 megjelenített oszlop szélességét a colgroup rögzíti. */
+.table-wrap.combined-wrap col:nth-child(1) { width: 48px; }
+.table-wrap.combined-wrap col:nth-child(2) { width: 65px; }
+.table-wrap.combined-wrap col:nth-child(3) { width: 48px; }
+.table-wrap.combined-wrap col:nth-child(4) { width: 150px; }
+.table-wrap.combined-wrap col:nth-child(5) { width: 115px; }
+
+/* I. forduló: Idő, Hibapont, Hely */
+.table-wrap.combined-wrap col:nth-child(6) { width: 52px; }
+.table-wrap.combined-wrap col:nth-child(7) { width: 52px; }
+.table-wrap.combined-wrap col:nth-child(8) { width: 38px; }
+
+/* II. forduló: Idő, Hibapont, Hely */
+.table-wrap.combined-wrap col:nth-child(9) { width: 52px; }
+.table-wrap.combined-wrap col:nth-child(10) { width: 52px; }
+.table-wrap.combined-wrap col:nth-child(11) { width: 38px; }
+
+/* Összetett eredmény: Idő, Hibapont, Hely */
+.table-wrap.combined-wrap col:nth-child(12) { width: 52px; }
+.table-wrap.combined-wrap col:nth-child(13) { width: 52px; }
+.table-wrap.combined-wrap col:nth-child(14) { width: 38px; }
 
 .table-wrap.combined-wrap th,
 .table-wrap.combined-wrap td {
   padding: 7px 6px;
-}
-
-/* AZ I. FORDULÓ HELYEZÉS OSZLOPA – SZŰK FIX SZÉLESSÉG */
-.table-wrap.combined-wrap th:nth-child(8),
-.table-wrap.combined-wrap td:nth-child(8) {
-  width: 42px !important;
-  min-width: 42px !important;
-  max-width: 42px !important;
-  padding-left: 3px !important;
-  padding-right: 3px !important;
-  white-space: nowrap;
-  overflow: hidden;
 }
 
 /* RÖGZÍTETT ELSŐ OSZLOP */
@@ -642,7 +653,11 @@ function render() {
     active === "osszetett" ? " combined-wrap" : "";
 
   let html =
-    '<div class="table-wrap' + combinedClass + '"><table><thead>';
+    '<div class="table-wrap' + combinedClass + '"><table>' +
+    (active === "osszetett"
+      ? '<colgroup>' + Array.from({ length: 14 }, () => '<col>').join("") + '</colgroup>'
+      : '') +
+    '<thead>';
 
   /* ÖSSZETETT EREDMÉNY: NINCS KÜLÖN ÁLTALÁNOS FEJLÉC */
 
