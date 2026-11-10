@@ -855,7 +855,8 @@ function render() {
 
   } else if (active === "eredmeny1") {
 
-    selectedColumns = [0, 1, 2, 3, 4, 5, 6, 7];
+    // A Nr. értéke jelenik meg a Hely oszlopban; az eredeti Nr. oszlop rejtve marad.
+    selectedColumns = [1, 2, 3, 4, 5, 6, 7];
 
   } else if (active === "osszetett") {
 
@@ -1110,7 +1111,7 @@ function render() {
         selectedColumns.forEach(index => {
           if (headers[index] !== undefined) {
             const headerValue = String(headers[index] ?? "");
-            const shownHeader = index === 3 ? "Kocsi<br>száma" : esc(headerValue);
+            const shownHeader = index === 1 ? "Hely" : (index === 3 ? "Kocsi<br>száma" : esc(headerValue));
             const className = isLeftAlignedColumn(index) ? ' class="left"' : "";
             html += "<th" + className + ">" + shownHeader + "</th>";
           }
