@@ -30,6 +30,14 @@
       "location": "F\u00FCzesgyarmat",
       "date": "2026-11-09",
       "data": "versenyek/2026-11-09-fuzesgyarmat/eredmenyek.json",
+      "live": false
+    },
+    {
+      "id": "2026-11-10-kocsord",
+      "name": "TESZT Verseny",
+      "location": "Kocsord",
+      "date": "2026-11-10",
+      "data": "versenyek/2026-11-10-kocsord/eredmenyek.json",
       "live": true
     }
   ]
