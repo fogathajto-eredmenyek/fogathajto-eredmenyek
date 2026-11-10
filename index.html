@@ -412,6 +412,22 @@ footer {
   font-size: 11px;
 }
 
+/* A kocsiszám oszlopa legyen kompakt a startlistákon. */
+.table-wrap.startlist-wrap th:nth-child(2),
+.table-wrap.startlist-wrap td:nth-child(2) {
+  width: 52px !important;
+  min-width: 52px !important;
+  max-width: 52px !important;
+  padding-left: 3px !important;
+  padding-right: 3px !important;
+  box-sizing: border-box;
+}
+
+.table-wrap.startlist-wrap th:nth-child(2) {
+  white-space: normal;
+  line-height: 1.15;
+}
+
 /* A becsült startidő maradjon látható vízszintes görgetés közben is. */
 .table-wrap.startlist-wrap .estimated-start {
   position: sticky;
