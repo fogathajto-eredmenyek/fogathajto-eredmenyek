@@ -38,6 +38,14 @@
       "location": "Kocsord",
       "date": "2026-11-10",
       "data": "versenyek/2026-11-10-kocsord/eredmenyek.json",
+      "live": false
+    },
+    {
+      "id": "2026-11-10-kapuvar",
+      "name": "TESZT Online verseny",
+      "location": "Kapuv\u00E1r",
+      "date": "2026-11-10",
+      "data": "versenyek/2026-11-10-kapuvar/eredmenyek.json",
       "live": true
     }
   ]
