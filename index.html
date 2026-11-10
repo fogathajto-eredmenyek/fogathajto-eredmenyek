@@ -920,6 +920,11 @@ function render() {
     });
     html += "</tr></thead><tbody>";
 
+  } else if (active === "eredmeny1") {
+
+    // Kategóriánként külön oszlopfejléc kerül az adatsorok fölé.
+    html += "</thead><tbody>";
+
   } else {
 
     html += "<tr>";
@@ -1099,6 +1104,18 @@ function render() {
           esc(cell1 + "  |  " + details.join("  |  "));
 
         html += "</td></tr>";
+
+        // A kategória- és pályaadatok után ismét megjelenítjük az oszlopfejlécet.
+        html += "<tr>";
+        selectedColumns.forEach(index => {
+          if (headers[index] !== undefined) {
+            const headerValue = String(headers[index] ?? "");
+            const shownHeader = index === 3 ? "Kocsi<br>száma" : esc(headerValue);
+            const className = isLeftAlignedColumn(index) ? ' class="left"' : "";
+            html += "<th" + className + ">" + shownHeader + "</th>";
+          }
+        });
+        html += "</tr>";
 
         return;
 
