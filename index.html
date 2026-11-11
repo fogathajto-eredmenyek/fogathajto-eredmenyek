@@ -305,18 +305,6 @@ footer {
 .table-wrap.final-wrap td {
   padding: 7px 6px;
 }
-/* A kocsiszám keskeny oszlop legyen a végeredményen és az összetett eredményen is. */
-.table-wrap.final-wrap th:nth-child(2),
-.table-wrap.final-wrap td:nth-child(2),
-.table-wrap.combined-wrap th:nth-child(2),
-.table-wrap.combined-wrap td:nth-child(2) {
-  width: 52px;
-  min-width: 52px;
-  max-width: 52px;
-  padding-left: 3px;
-  padding-right: 3px;
-  white-space: normal;
-}
 
 
 /* KÉT FORDULÓ ÖSSZETETT EREDMÉNY */
@@ -358,23 +346,12 @@ footer {
   min-width: 48px;
 }
 
-/* RÖGZÍTETT MÁSODIK OSZLOP */
+/* RÖGZÍTETT VERSENYZŐNÉV – a kocsiszám és igazolványszám nélkül */
 
 .table-wrap.combined-wrap th:nth-child(2),
 .table-wrap.combined-wrap td:nth-child(2) {
   position: sticky;
   left: 48px;
-  z-index: 4;
-  background: #eaf0f7;
-  min-width: 65px;
-}
-
-/* RÖGZÍTETT VERSENYZŐNÉV */
-
-.table-wrap.combined-wrap th:nth-child(4),
-.table-wrap.combined-wrap td:nth-child(4) {
-  position: sticky;
-  left: 161px;
   z-index: 4;
   background: #eaf0f7;
   min-width: 150px;
@@ -438,21 +415,6 @@ footer {
   font-size: 11px;
 }
 
-/* A kocsiszám oszlopa legyen kompakt a startlistákon. */
-.table-wrap.startlist-wrap th:nth-child(2),
-.table-wrap.startlist-wrap td:nth-child(2) {
-  width: 52px !important;
-  min-width: 52px !important;
-  max-width: 52px !important;
-  padding-left: 3px !important;
-  padding-right: 3px !important;
-  box-sizing: border-box;
-}
-
-.table-wrap.startlist-wrap th:nth-child(2) {
-  white-space: normal;
-  line-height: 1.15;
-}
 
 /* A becsült startidő maradjon látható vízszintes görgetés közben is. */
 .table-wrap.startlist-wrap .estimated-start {
@@ -891,31 +853,31 @@ function render() {
 
   if (active === "startlista1") {
 
-    selectedColumns = [1, 2, 3, 4, 5, 6];
+    selectedColumns = [1, 4, 5, 6];
 
   } else if (active === "startlista2") {
 
-    selectedColumns = [1, 2, 3, 4, 5, 6];
+    selectedColumns = [1, 4, 5, 6];
 
   } else if (active === "eredmeny1") {
 
     // A Nr. értéke jelenik meg a Hely oszlopban; az eredeti Nr. oszlop rejtve marad.
-    selectedColumns = [1, 2, 3, 4, 5, 6, 7];
+    selectedColumns = [1, 4, 5, 6, 7];
 
   } else if (active === "osszetett") {
 
     selectedColumns = [
-      2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
+      2, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
     ];
 
   } else if (active === "osszevetesStart") {
 
-    selectedColumns = [1, 2, 3, 4, 5, 6];
+    selectedColumns = [1, 4, 5, 6];
 
   } else if (active === "vegso") {
 
     // Az első két helyezési oszlop nem jelenik meg a webes táblázatban.
-    selectedColumns = Array.from({ length: 17 }, (_, index) => index + 2);
+    selectedColumns = [2, ...Array.from({ length: 14 }, (_, index) => index + 5)];
 
   }
 
@@ -932,7 +894,7 @@ function render() {
     '<div class="table-wrap' + combinedClass + '"><table>' +
     (active === "osszetett"
       ? '<colgroup>' +
-        '<col><col><col><col><col><col><col>' +
+        '<col><col><col><col><col>' +
         '<col style="width:35px">' +
         '<col><col><col><col><col><col>' +
         '</colgroup>'
@@ -948,9 +910,9 @@ function render() {
   } else if (active === "vegso") {
 
     const categoryLabel = String((rows[5] || [])[2] ?? "").trim();
-    html += '<tr class="final-category-heading"><th colspan="17">' + esc(categoryLabel) + '</th></tr>';
+    html += '<tr class="final-category-heading"><th colspan="15">' + esc(categoryLabel) + '</th></tr>';
     html += '<tr class="final-group-heading">' +
-      '<th colspan="5">Versenyző adatai</th>' +
+      '<th colspan="3">Versenyző adatai</th>' +
       '<th colspan="3">I. forduló</th>' +
       '<th colspan="3">II. forduló</th>' +
       '<th colspan="3">I+II. eredmény</th>' +
@@ -959,7 +921,7 @@ function render() {
     html += "<tr>";
     selectedColumns.forEach(index => {
       const headerValue = String(headers[index] ?? "");
-      const shownHeader = index === 3 ? "Kocsi<br>száma" : esc(headerValue);
+      const shownHeader = esc(headerValue);
       const className = isLeftAlignedColumn(index) ? ' class="left"' : "";
       html += '<th' + className + '>' + shownHeader + '</th>';
     });
@@ -976,9 +938,7 @@ function render() {
     selectedColumns.forEach(index => {
       if (headers[index] !== undefined) {
         const headerValue = String(headers[index] ?? "");
-        const shownHeader = index === 3 && (active === "osszetett")
-          ? "Kocsi<br>száma"
-          : esc(headerValue);
+        const shownHeader = esc(headerValue);
         const className = isLeftAlignedColumn(index) ? ' class="left"' : "";
         html += "<th" + className + ">" + shownHeader + "</th>";
       }
@@ -1056,7 +1016,7 @@ function render() {
         html += '<tr class="category-row">';
 
         html +=
-          '<td colspan="5">' +
+          '<td colspan="3">' +
           esc(categoryName) +
           '</td>';
 
@@ -1073,7 +1033,7 @@ function render() {
 
         html += '<tr class="combined-subheader">';
 
-        html += '<td colspan="5"></td>';
+        html += '<td colspan="3"></td>';
 
         const subHeaders = [
           "Idő", "Hibapont", "Hely",
@@ -1157,7 +1117,7 @@ function render() {
         selectedColumns.forEach(index => {
           if (headers[index] !== undefined) {
             const headerValue = String(headers[index] ?? "");
-            const shownHeader = index === 1 ? "Hely" : (index === 3 ? "Kocsi<br>száma" : esc(headerValue));
+            const shownHeader = index === 1 ? "Hely" : esc(headerValue);
             const className = isLeftAlignedColumn(index) ? ' class="left"' : "";
             html += "<th" + className + ">" + shownHeader + "</th>";
           }
