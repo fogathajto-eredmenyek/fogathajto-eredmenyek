@@ -787,26 +787,70 @@ function buildStartlistCourse(rows) {
   return html;
 }
 
-/* BECSÜLT STARTIDŐK – AW6: kezdés, AW7: perc/versenyző.
-   A VBA a UsedRange teljes szélességét JSON-ba menti, ezért AW indexe 48. */
+/* BECSÜLT STARTIDŐK
+   AW6: első start, AW7: többletidő percben.
+   A kategóriák alapideje a startlista 6–11. soraiban, a G oszlopban található.
+   Minden versenyző startja az előző versenyzők saját kategória-alapidejének
+   és a beállított többletidőnek az összegéből számolódik. */
+function normalizeCategory(value) {
+  return String(value ?? "").trim().replace(/\s+/g, " ").toLocaleLowerCase("hu-HU");
+}
+
+function parseSeconds(value) {
+  const match = String(value ?? "").match(/-?\d+(?:[.,]\d+)?/);
+  if (!match) return null;
+  const seconds = Number(match[0].replace(",", "."));
+  return Number.isFinite(seconds) && seconds > 0 ? seconds : null;
+}
+
 function parseStartSchedule(rows) {
   const startRow = rows[5] || []; // Excel 6. sor
   const intervalRow = rows[6] || []; // Excel 7. sor
-  const rawStart = String(startRow[48] ?? "").trim();
-  const rawInterval = String(intervalRow[48] ?? "").trim();
+  const rawStart = String(startRow[48] ?? "").trim(); // AW6
+  const rawExtra = String(intervalRow[48] ?? "").trim(); // AW7
   const timeMatch = rawStart.match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?$/);
-  const intervalMatch = rawInterval.match(/-?\d+(?:[.,]\d+)?/);
-  if (!timeMatch || !intervalMatch) return null;
+  const extraMatch = rawExtra.match(/-?\d+(?:[.,]\d+)?/);
+
+  if (!timeMatch || !extraMatch) return null;
+
   const hours = Number(timeMatch[1]);
   const minutes = Number(timeMatch[2]);
   const seconds = Number(timeMatch[3] || 0);
-  const interval = Number(intervalMatch[0].replace(",", "."));
-  if (hours > 23 || minutes > 59 || seconds > 59 || !Number.isFinite(interval) || interval <= 0) return null;
-  return { startSeconds: hours * 3600 + minutes * 60 + seconds, intervalSeconds: interval * 60 };
+  const extraMinutes = Number(extraMatch[0].replace(",", "."));
+
+  if (
+    hours > 23 || minutes > 59 || seconds > 59 ||
+    !Number.isFinite(extraMinutes) || extraMinutes < 0
+  ) return null;
+
+  const categorySeconds = new Map();
+
+  // Excel 6–11. sor: kategória a B oszlopban, alapidő a G oszlopban.
+  rows.slice(5, 11).forEach(row => {
+    if (!Array.isArray(row)) return;
+    const category = normalizeCategory(row[1]);
+    const baseTime = parseSeconds(row[6]);
+    if (category && baseTime !== null) {
+      categorySeconds.set(category, baseTime);
+    }
+  });
+
+  return {
+    startSeconds: hours * 3600 + minutes * 60 + seconds,
+    extraSeconds: extraMinutes * 60,
+    categorySeconds
+  };
 }
 
-function formatEstimatedStart(schedule, competitorIndex) {
-  const totalSeconds = Math.round(schedule.startSeconds + competitorIndex * schedule.intervalSeconds);
+function getCompetitorInterval(schedule, category) {
+  const baseSeconds = schedule.categorySeconds.get(normalizeCategory(category));
+  // Ismeretlen kategória esetén ne találjunk ki alapidőt: csak a beállított
+  // többletidőt használjuk, hogy a becsült start továbbra is megjelenhessen.
+  return (baseSeconds ?? 0) + schedule.extraSeconds;
+}
+
+function formatEstimatedStart(schedule, elapsedSeconds) {
+  const totalSeconds = Math.round(schedule.startSeconds + elapsedSeconds);
   const daySeconds = 24 * 60 * 60;
   const wrapped = ((totalSeconds % daySeconds) + daySeconds) % daySeconds;
   const hours = Math.floor(wrapped / 3600);
@@ -950,7 +994,7 @@ function render() {
 
   if (active === "startlista1" || active === "startlista2" || active === "osszevetesStart") {
 
-    let competitorIndex = 0;
+    let elapsedSeconds = 0;
     rows.slice(headerIndex + 1).forEach(row => {
 
       if (!Array.isArray(row) || emptyRow(row)) return;
@@ -972,10 +1016,12 @@ function render() {
         html += "<td" + className + ">" + esc(row[index] ?? "") + "</td>";
       });
       if (startSchedule) {
-        html += '<td class="estimated-start"><strong>' + esc(formatEstimatedStart(startSchedule, competitorIndex)) + '</strong></td>';
+        html += '<td class="estimated-start"><strong>' + esc(formatEstimatedStart(startSchedule, elapsedSeconds)) + '</strong></td>';
       }
       html += "</tr>";
-      competitorIndex++;
+      if (startSchedule) {
+        elapsedSeconds += getCompetitorInterval(startSchedule, row[6]);
+      }
 
     });
 
