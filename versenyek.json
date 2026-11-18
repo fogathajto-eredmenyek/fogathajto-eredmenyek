@@ -46,6 +46,14 @@
       "location": "Kapuv\u00E1r",
       "date": "2026-11-10",
       "data": "versenyek/2026-11-10-kapuvar/eredmenyek.json",
+      "live": false
+    },
+    {
+      "id": "2026-11-17-osorhei-(rom)",
+      "name": "Fugyiv\u00E1s\u00E1rhelyi Fogathajt\u00F3 Verseny",
+      "location": "Osorhei (Rom)",
+      "date": "2026-11-17",
+      "data": "versenyek/2026-11-17-osorhei-(rom)/eredmenyek.json",
       "live": true
     }
   ]
