@@ -24,14 +24,7 @@
       "data": "versenyek/2026-07-13-pocsaj/eredmenyek.json",
       "live": false
     },
-    {
-      "id": "2026-11-09-fuzesgyarmat",
-      "name": "Füzesgyarmati Fogathajtó Verseny",
-      "location": "Füzesgyarmat",
-      "date": "2026-11-09",
-      "data": "versenyek/2026-11-09-fuzesgyarmat/eredmenyek.json",
-      "live": false
-    },
+    
     {
       "id": "2026-11-17-osorhei-(rom)",
       "name": "Fugyivásárhelyi Fogathajtó Verseny",
