@@ -256,8 +256,7 @@ td.left {
     padding: 6px 4px;
   }
 }
-
-/* ÁLLAPOTJELZÉS */
+\n/* ÁLLAPOTJELZÉS */
 
 #status {
   font-size: 12px;
@@ -795,7 +794,7 @@ function parseStartSchedule(rows) {
 
   const hours = Number(timeMatch[1]);
   const minutes = Number(timeMatch[2]);
-  const seconds = Number(timeMatch[3]);
+  const seconds = Number(timeMatch[3] || 0);
   const extraMinutes = Number(extraMatch[0].replace(",", "."));
 
   if (
@@ -820,6 +819,23 @@ function parseStartSchedule(rows) {
     extraSeconds: extraMinutes * 60,
     categorySeconds
   };
+}
+
+function parseVadasStartSchedule(rows) {
+  // Vadászhajtásnál ugyanaz az AW6/AW7 beállítás, de nincs kategória-alapidő.
+  const startRow = rows[5] || [];
+  const intervalRow = rows[6] || [];
+  const rawStart = String(startRow[48] ?? "").trim();
+  const rawInterval = String(intervalRow[48] ?? "").trim();
+  const timeMatch = rawStart.match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?$/);
+  const intervalMatch = rawInterval.match(/-?\d+(?:[.,]\d+)?/);
+  if (!timeMatch || !intervalMatch) return null;
+  const hours = Number(timeMatch[1]);
+  const minutes = Number(timeMatch[2]);
+  const seconds = Number(timeMatch[3] || 0);
+  const intervalMinutes = Number(intervalMatch[0].replace(",", "."));
+  if (hours > 23 || minutes > 59 || seconds > 59 || !Number.isFinite(intervalMinutes) || intervalMinutes < 0) return null;
+  return { startSeconds: hours * 3600 + minutes * 60 + seconds, extraSeconds: intervalMinutes * 60, categorySeconds: new Map() };
 }
 
 function getCompetitorInterval(schedule, category) {
@@ -849,10 +865,13 @@ function renderVadas() {
   let html = "";
 
   if (active === "vadasStartlista") {
-    html += '<div class="table-wrap"><table><thead><tr>' +
+    const vadasSchedule = parseVadasStartSchedule(rows);
+    html += '<div class="table-wrap startlist-wrap"><table><thead><tr>' +
       '<th>Nr.</th><th class="left">Versenyző neve</th><th class="left">Egyesülete</th><th>Kategória</th>' +
+      (vadasSchedule ? '<th class="estimated-start">Becsült<br>start</th>' : '') +
       '</tr></thead><tbody>';
 
+    let elapsedSeconds = 0;
     rows.slice(9).forEach(row => {
       if (!Array.isArray(row) || emptyRow(row)) return;
       const nr = String(row[1] ?? '').trim();
@@ -862,7 +881,10 @@ function renderVadas() {
       html += '<tr><td>' + esc(row[1]) + '</td>' +
         '<td class="left">' + esc(row[4]) + '</td>' +
         '<td class="left">' + esc(row[5]) + '</td>' +
-        '<td>' + esc(row[6]) + '</td></tr>';
+        '<td>' + esc(row[6]) + '</td>' +
+        (vadasSchedule ? '<td class="estimated-start"><strong>' + esc(formatEstimatedStart(vadasSchedule, elapsedSeconds)) + '</strong></td>' : '') +
+        '</tr>';
+      if (vadasSchedule) elapsedSeconds += vadasSchedule.extraSeconds;
     });
 
     html += '</tbody></table></div>';
@@ -902,7 +924,7 @@ function renderVadas() {
 
     blocks.forEach(block => {
       html += '<div class="table-wrap"><table><thead>' +
-        '<tr class="category-row"><th colspan="7" class="left">' + esc(block.name) + '</th></tr>' +
+        '<tr class="category-row"><th colspan="7">' + esc(block.name) + '</th></tr>' +
         '<tr><th>Hely</th><th class="left">Versenyző neve</th>' +
         '<th class="left">Egyesülete</th><th>Verő Hp.</th><th>Idő</th>' +
         '<th>Össz Hp.</th><th>Hely</th></tr></thead><tbody>';
@@ -1089,7 +1111,8 @@ function render() {
 
   }
 
-  /* KÉT FORDULÓ ÖSSZETETT EREDMÉNY */
+  
+/* KÉT FORDULÓ ÖSSZETETT EREDMÉNY */
 
   else if (active === "osszetett") {
 
