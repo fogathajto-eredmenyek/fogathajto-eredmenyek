@@ -256,7 +256,8 @@ td.left {
     padding: 6px 4px;
   }
 }
-\n/* ÁLLAPOTJELZÉS */
+
+/* ÁLLAPOTJELZÉS */
 
 #status {
   font-size: 12px;
@@ -794,7 +795,7 @@ function parseStartSchedule(rows) {
 
   const hours = Number(timeMatch[1]);
   const minutes = Number(timeMatch[2]);
-  const seconds = Number(timeMatch[3] || 0);
+  const seconds = Number(timeMatch[3]);
   const extraMinutes = Number(extraMatch[0].replace(",", "."));
 
   if (
@@ -844,52 +845,82 @@ function renderVadas() {
     resultsRoot.innerHTML = '<div class="empty">Még nincsenek közzétett eredmények.</div>';
     return;
   }
+
   let html = "";
+
   if (active === "vadasStartlista") {
     html += '<div class="table-wrap"><table><thead><tr>' +
-      '<th>Nr.</th><th>Kocsi száma</th><th>Ig. szám</th><th class="left">Versenyző neve</th><th class="left">Egyesülete</th><th>Kategória</th>' +
+      '<th>Nr.</th><th class="left">Versenyző neve</th><th class="left">Egyesülete</th><th>Kategória</th>' +
       '</tr></thead><tbody>';
+
     rows.slice(9).forEach(row => {
       if (!Array.isArray(row) || emptyRow(row)) return;
-      const nr = String(row[1] ?? '').trim(), name = String(row[4] ?? '').trim();
+      const nr = String(row[1] ?? '').trim();
+      const name = String(row[4] ?? '').trim();
       if (!/^\d+$/.test(nr) || !name) return;
-      html += '<tr><td>' + esc(row[1]) + '</td><td>' + esc(row[2]) + '</td><td>' + esc(row[3]) + '</td><td class="left">' + esc(row[4]) + '</td><td class="left">' + esc(row[5]) + '</td><td>' + esc(row[6]) + '</td></tr>';
+
+      html += '<tr><td>' + esc(row[1]) + '</td>' +
+        '<td class="left">' + esc(row[4]) + '</td>' +
+        '<td class="left">' + esc(row[5]) + '</td>' +
+        '<td>' + esc(row[6]) + '</td></tr>';
     });
+
     html += '</tbody></table></div>';
   } else {
     const blocks = [];
     let current = null;
-    rows.forEach((row, index) => {
+
+    rows.forEach(row => {
       if (!Array.isArray(row)) return;
+
       const categoryText = String(row[1] ?? '').trim();
       if (categoryText.toLowerCase().startsWith('kategória:')) {
         if (current && current.items.length) blocks.push(current);
-        current = { name: categoryText.replace(/^Kategória:\s*/i, '').trim(), items: [] };
+        current = {
+          name: categoryText.replace(/^Kategória:\s*/i, '').trim(),
+          items: []
+        };
         return;
       }
+
       if (!current) return;
-      if (String(row[0] ?? '').trim() === 'Hely' && String(row[1] ?? '').trim() === 'Nr') return;
-      const nr = String(row[1] ?? '').trim(), name = String(row[4] ?? '').trim();
+
+      if (String(row[0] ?? '').trim() === 'Hely' &&
+          String(row[1] ?? '').trim() === 'Nr') return;
+
+      const nr = String(row[1] ?? '').trim();
+      const name = String(row[4] ?? '').trim();
       if (/^\d+$/.test(nr) && name) current.items.push(row);
     });
+
     if (current && current.items.length) blocks.push(current);
+
     if (!blocks.length) {
       resultsRoot.innerHTML = '<div class="empty">Még nincsenek közzétett eredmények.</div>';
       return;
     }
+
     blocks.forEach(block => {
-      html += '<div class="table-wrap"><table><thead><tr class="category-row"><th colspan="10">' + esc(block.name) + '</th></tr><tr>' +
-        '<th>Hely</th><th>Nr.</th><th>Kocsi száma</th><th>Ig. szám</th><th class="left">Versenyző neve</th><th class="left">Egyesülete</th><th>Verő Hp.</th><th>Idő</th><th>Össz Hp.</th><th>Hely</th>' +
-        '</tr></thead><tbody>';
+      html += '<div class="table-wrap"><table><thead>' +
+        '<tr class="category-row"><th colspan="7">' + esc(block.name) + '</th></tr>' +
+        '<tr><th>Hely</th><th class="left">Versenyző neve</th>' +
+        '<th class="left">Egyesülete</th><th>Verő Hp.</th><th>Idő</th>' +
+        '<th>Össz Hp.</th><th>Hely</th></tr></thead><tbody>';
+
       block.items.forEach(row => {
-        html += '<tr>' + row.slice(0,10).map((v,i) => '<td' + ((i===4||i===5)?' class="left"':'') + '>' + esc(v) + '</td>').join('') + '</tr>';
+        const visibleValues = [row[0], row[4], row[5], row[6], row[7], row[8], row[9]];
+        html += '<tr>' + visibleValues.map((value, index) =>
+          '<td' + ((index === 1 || index === 2) ? ' class="left"' : '') +
+          '>' + esc(value) + '</td>'
+        ).join('') + '</tr>';
       });
+
       html += '</tbody></table></div>';
     });
   }
+
   resultsRoot.innerHTML = html;
 }
-
 
 /* EREDMÉNYEK MEGJELENÍTÉSE */
 
@@ -1058,8 +1089,7 @@ function render() {
 
   }
 
-  
-/* KÉT FORDULÓ ÖSSZETETT EREDMÉNY */
+  /* KÉT FORDULÓ ÖSSZETETT EREDMÉNY */
 
   else if (active === "osszetett") {
 
