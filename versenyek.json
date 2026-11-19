@@ -31,6 +31,14 @@
       "date": "2026-11-17",
       "data": "versenyek/2026-11-17-osorhei-(rom)/eredmenyek.json",
       "live": false
+    },
+    {
+      "id": "2026-11-19-monostorapati",
+      "name": "TESZT Online verseny",
+      "location": "Monostorap\u00E1ti",
+      "date": "2026-11-19",
+      "data": "versenyek/2026-11-19-monostorapati/eredmenyek.json",
+      "live": true
     }
   ]
 }
