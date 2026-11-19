@@ -825,17 +825,31 @@ function parseVadasStartSchedule(rows) {
   // Vadászhajtásnál ugyanaz az AW6/AW7 beállítás, de nincs kategória-alapidő.
   const startRow = rows[5] || [];
   const intervalRow = rows[6] || [];
-  const rawStart = String(startRow[48] ?? "").trim();
+  const startValue = startRow[48];
+  const rawStart = String(startValue ?? "").trim();
   const rawInterval = String(intervalRow[48] ?? "").trim();
-  const timeMatch = rawStart.match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?$/);
+
+  // Excel az időt gyakran a nap törtrészeként tárolja (pl. 14:00 = 0.5833333).
+  let startSeconds = null;
+  if (typeof startValue === "number" && Number.isFinite(startValue) && startValue >= 0 && startValue < 1) {
+    startSeconds = Math.round(startValue * 24 * 60 * 60);
+  } else {
+    const timeMatch = rawStart.match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?$/);
+    if (timeMatch) {
+      const hours = Number(timeMatch[1]);
+      const minutes = Number(timeMatch[2]);
+      const seconds = Number(timeMatch[3] || 0);
+      if (hours <= 23 && minutes <= 59 && seconds <= 59) {
+        startSeconds = hours * 3600 + minutes * 60 + seconds;
+      }
+    }
+  }
+
   const intervalMatch = rawInterval.match(/-?\d+(?:[.,]\d+)?/);
-  if (!timeMatch || !intervalMatch) return null;
-  const hours = Number(timeMatch[1]);
-  const minutes = Number(timeMatch[2]);
-  const seconds = Number(timeMatch[3] || 0);
+  if (startSeconds === null || !intervalMatch) return null;
   const intervalMinutes = Number(intervalMatch[0].replace(",", "."));
-  if (hours > 23 || minutes > 59 || seconds > 59 || !Number.isFinite(intervalMinutes) || intervalMinutes < 0) return null;
-  return { startSeconds: hours * 3600 + minutes * 60 + seconds, extraSeconds: intervalMinutes * 60, categorySeconds: new Map() };
+  if (!Number.isFinite(intervalMinutes) || intervalMinutes < 0) return null;
+  return { startSeconds, extraSeconds: intervalMinutes * 60, categorySeconds: new Map() };
 }
 
 function getCompetitorInterval(schedule, category) {
