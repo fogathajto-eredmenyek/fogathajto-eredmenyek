@@ -25,14 +25,6 @@
       "live": false
     },
     {
-      "id": "2026-11-09-fuzesgyarmat",
-      "name": "F\u00FCzesgyarmati Fogathajt\u00F3 Verseny",
-      "location": "F\u00FCzesgyarmat",
-      "date": "2026-11-09",
-      "data": "versenyek/2026-11-09-fuzesgyarmat/eredmenyek.json",
-      "live": false
-    },
-    {
       "id": "2026-11-10-kocsord",
       "name": "TESZT Verseny",
       "location": "Kocsord",
