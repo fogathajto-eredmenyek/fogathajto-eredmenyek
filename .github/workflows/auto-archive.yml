@@ -1,1 +1,35 @@
+name: Auto archive live competition after 48 hours
 
+'on':
+  schedule:
+    - cron: '*/15 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  archive:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Check and archive if 48 hours elapsed
+        run: python3 archive_live_competition.py
+
+      - name: Commit archive changes
+        run: |
+          git add eredmenyek.json versenyek.json versenyek
+
+          if git diff --cached --quiet; then
+            echo "No archive changes."
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git commit -m "Automatically archive competition after 48 hours"
+          git push
