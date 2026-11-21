@@ -1,24 +1,24 @@
-﻿{
+{
   "competitions": [
     {
-      "id": "2026-11-03-s\u00E1rr\u00E9tudvari-fogathajt\u00F3-verseny",
-      "name": "S\u00E1rr\u00E9tudvari Fogathajt\u00F3 Verseny",
-      "location": "S\u00E1rr\u00E9tudvari",
+      "id": "2026-11-03-sárrétudvari-fogathajtó-verseny",
+      "name": "Sárrétudvari Fogathajtó Verseny",
+      "location": "Sárrétudvari",
       "date": "2026. 11. 03.",
-      "data": "versenyek/2026-11-03-s\u00E1rr\u00E9tudvari-fogathajt\u00F3-verseny/eredmenyek.json",
+      "data": "versenyek/2026-11-03-sárrétudvari-fogathajtó-verseny/eredmenyek.json",
       "live": false
     },
     {
       "id": "2026-10-28-fulop",
-      "name": "F\u00FCl\u00F6pi Fogathajt\u00F3 Verseny",
-      "location": "F\u00FCl\u00F6p",
+      "name": "Fülöpi Fogathajtó Verseny",
+      "location": "Fülöp",
       "date": "2026-10-28",
       "data": "versenyek/2026-10-28-fulop/eredmenyek.json",
       "live": false
     },
     {
       "id": "2026-07-13-pocsaj",
-      "name": "Pocsaji Fogathajt\u00F3 Verseny",
+      "name": "Pocsaji Fogathajtó Verseny",
       "location": "Pocsaj",
       "date": "2026-07-13",
       "data": "versenyek/2026-07-13-pocsaj/eredmenyek.json",
@@ -26,7 +26,7 @@
     },
     {
       "id": "2026-11-17-osorhei-(rom)",
-      "name": "Fugyiv\u00E1s\u00E1rhelyi Fogathajt\u00F3 Verseny",
+      "name": "Fugyivásárhelyi Fogathajtó Verseny",
       "location": "Osorhei (Rom)",
       "date": "2026-11-17",
       "data": "versenyek/2026-11-17-osorhei-(rom)/eredmenyek.json",
@@ -35,10 +35,10 @@
     {
       "id": "2026-11-19-monostorapati",
       "name": "TESZT Online verseny",
-      "location": "Monostorap\u00E1ti",
+      "location": "Monostorapáti",
       "date": "2026-11-19",
       "data": "versenyek/2026-11-19-monostorapati/eredmenyek.json",
-      "live": true
+      "live": false
     }
   ]
 }
